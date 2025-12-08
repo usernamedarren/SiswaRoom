@@ -13,7 +13,7 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DB_HOST: ${DB_HOST:-localhost}
+      DB_HOST: ${DB_HOST:-192.168.4.247}
       DB_PORT: ${DB_PORT:-13306}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-admin}

@@ -10,8 +10,8 @@ services:
     ports:
       - "4000:4000"
     environment:
-      # Connect to existing MySQL in aPanel (port 13306 exposed from container 13306)
-      DB_HOST: ${DB_HOST:-host.docker.internal}
+      # Connect to existing MySQL in aPanel (use 192.168.4.247 or check .env)
+      DB_HOST: ${DB_HOST:-192.168.4.247}
       DB_PORT: ${DB_PORT:-13306}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-admin}
