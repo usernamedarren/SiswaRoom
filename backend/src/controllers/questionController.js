@@ -3,27 +3,9 @@ import db from "../config/db.js";
 // GET /api/questions - Get all questions with filters
 export async function getQuestions(req, res, next) {
   try {
-    const { subject_id, material_id, difficulty, limit = 10 } = req.query;
-    let query = "SELECT * FROM questions WHERE 1=1";
-    const params = [];
-
-    if (subject_id) {
-      query += " AND subject_id = ?";
-      params.push(subject_id);
-    }
-
-    if (material_id) {
-      query += " AND material_id = ?";
-      params.push(material_id);
-    }
-
-    if (difficulty) {
-      query += " AND difficulty = ?";
-      params.push(difficulty);
-    }
-
-    query += " ORDER BY question_id ASC LIMIT ?";
-    params.push(parseInt(limit));
+    const { limit = 10 } = req.query;
+    const query = "SELECT question_id, question, answer FROM questions ORDER BY question_id ASC LIMIT ?";
+    const params = [parseInt(limit)];
 
     const [rows] = await db.query(query, params);
     res.json(rows);
@@ -57,11 +39,13 @@ export async function getSubjectQuestions(req, res, next) {
     const { subject_id } = req.params;
     const { limit = 20 } = req.query;
 
+    // Pull questions linked to quizzes of this subject
     const [rows] = await db.query(
-      `SELECT question_id, question_text, option_a, option_b, option_c, option_d, 
-              difficulty, material_id
-       FROM questions 
-       WHERE subject_id = ?
+      `SELECT q.question_id, q.question AS question_text, q.answer
+       FROM questions q
+       JOIN quiz_questions qq ON q.question_id = qq.question_id
+       JOIN quizzes qu ON qq.quiz_id = qu.quiz_id
+       WHERE qu.subject_id = ?
        ORDER BY RAND()
        LIMIT ?`,
       [subject_id, parseInt(limit)]

@@ -2,6 +2,7 @@ import { AuthService } from "../utils/auth.js";
 
 const getApiBase = () => {
   const host = window.location.hostname;
+  const protocol = window.location.protocol;
 
   // Local development
   if (host === "localhost" || host === "127.0.0.1") {
@@ -14,9 +15,9 @@ const getApiBase = () => {
     return `http://${host}:4000/api`;
   }
 
-  // Production (siswaroom.online via Cloudflare)
-  // BACKEND MUST BE ACCESSED THROUGH HTTPS TUNNEL
-  return "https://api.siswaroom.online/api";
+  // Production (via same domain with nginx proxy)
+  // Frontend + Backend share same domain/port (nginx proxies /api/ to backend:4000)
+  return `${protocol}//${host}/api`;
 };
 
 export const API_BASE = getApiBase();

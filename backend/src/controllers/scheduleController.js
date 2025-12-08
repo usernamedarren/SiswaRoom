@@ -8,7 +8,11 @@ export async function getSchedules(req, res, next) {
 
     let query = `
       SELECT 
-        s.*,
+        s.schedule_id,
+        s.subject_id,
+        s.teacher_id,
+        s.schedule_date,
+        s.schedule_time,
         sub.name as subject_name,
         u.name as teacher_name
       FROM class_schedule s
@@ -22,14 +26,14 @@ export async function getSchedules(req, res, next) {
 
     // Filter by date range
     if (start_date && end_date) {
-      query += ` AND s.class_date BETWEEN ? AND ?`;
+      query += ` AND s.schedule_date BETWEEN ? AND ?`;
       params.push(start_date, end_date);
     }
 
-    query += ` ORDER BY s.class_date ASC, s.start_time ASC`;
+    query += ` ORDER BY s.schedule_date ASC, s.schedule_time ASC`;
 
     const [rows] = await db.query(query, params);
-    res.json(rows);
+    res.json({ success: true, data: rows });
   } catch (err) {
     next(err);
   }
@@ -42,20 +46,21 @@ export async function getUpcomingSchedules(req, res, next) {
     const { limit = 5 } = req.query;
 
     const [rows] = await db.query(
-      `SELECT s.*, su.name as subject_name, u.name as teacher_name
+      `SELECT s.schedule_id, s.subject_id, s.teacher_id, s.schedule_date, s.schedule_time,
+              su.name as subject_name, u.name as teacher_name
        FROM class_schedule s
        JOIN subjects su ON s.subject_id = su.subject_id
        JOIN users u ON s.teacher_id = u.user_id
        WHERE s.schedule_id IN (
          SELECT DISTINCT schedule_id FROM class_students WHERE user_id = ?
        )
-       AND s.class_date >= CURDATE()
-       ORDER BY s.class_date ASC, s.start_time ASC
+       AND s.schedule_date >= CURDATE()
+       ORDER BY s.schedule_date ASC, s.schedule_time ASC
        LIMIT ?`,
       [user_id, parseInt(limit)]
     );
 
-    res.json(rows);
+    res.json({ success: true, data: rows });
   } catch (err) {
     next(err);
   }
@@ -95,7 +100,7 @@ export async function getScheduleDetail(req, res, next) {
     const schedule = rows[0];
     schedule.students = students;
 
-    res.json(schedule);
+    res.json({ success: true, data: schedule });
   } catch (err) {
     next(err);
   }
@@ -111,18 +116,18 @@ export async function getCalendar(req, res, next) {
     const targetYear = year || new Date().getFullYear();
 
     const [rows] = await db.query(
-      `SELECT s.class_date, COUNT(*) as total_classes
+      `SELECT s.schedule_date, COUNT(*) as total_classes
        FROM class_schedule s
        WHERE s.schedule_id IN (
          SELECT DISTINCT schedule_id FROM class_students WHERE user_id = ?
        )
-       AND MONTH(s.class_date) = ? AND YEAR(s.class_date) = ?
-       GROUP BY s.class_date
-       ORDER BY s.class_date ASC`,
+       AND MONTH(s.schedule_date) = ? AND YEAR(s.schedule_date) = ?
+       GROUP BY s.schedule_date
+       ORDER BY s.schedule_date ASC`,
       [user_id, targetMonth, targetYear]
     );
 
-    res.json(rows);
+    res.json({ success: true, data: rows });
   } catch (err) {
     next(err);
   }

@@ -3,24 +3,20 @@ import db from "../config/db.js";
 // GET /api/dashboard/summary - System-wide statistics
 export async function getDashboardSummary(req, res, next) {
   try {
-    const [[{ subjectsCount }]] = await db.query(
-      "SELECT COUNT(*) AS subjectsCount FROM subjects"
-    );
-    const [[{ materialsCount }]] = await db.query(
-      "SELECT COUNT(*) AS materialsCount FROM materials"
-    );
-    const [[{ questionsCount }]] = await db.query(
-      "SELECT COUNT(*) AS questionsCount FROM questions"
-    );
-    const [[{ quizzesCount }]] = await db.query(
-      "SELECT COUNT(*) AS quizzesCount FROM quizzes"
-    );
+    const [[{ subjectsCount }]] = await db.query("SELECT COUNT(*) AS subjectsCount FROM subjects");
+    const [[{ materialsCount }]] = await db.query("SELECT COUNT(*) AS materialsCount FROM materials");
+    const [[{ questionsCount }]] = await db.query("SELECT COUNT(*) AS questionsCount FROM questions");
+    const [[{ quizzesCount }]] = await db.query("SELECT COUNT(*) AS quizzesCount FROM quizzes");
+    const [[{ usersCount }]] = await db.query("SELECT COUNT(*) AS usersCount FROM users");
+    const [[{ topicsCount }]] = await db.query("SELECT COUNT(*) AS topicsCount FROM topics");
 
     res.json({
-      subjectsCount,
-      materialsCount,
-      questionsCount,
-      quizzesCount
+      users: usersCount || 0,
+      subjects: subjectsCount || 0,
+      topics: topicsCount || 0,
+      materials: materialsCount || 0,
+      questions: questionsCount || 0,
+      quizzes: quizzesCount || 0
     });
   } catch (err) {
     next(err);
@@ -84,8 +80,7 @@ export async function getUpcomingClasses(req, res, next) {
     const { user_id } = req.user;
 
     const [rows] = await db.query(
-      `SELECT cs.schedule_id, cs.class_name, cs.class_date,
-              cs.start_time, cs.end_time, cs.meeting_url,
+      `SELECT cs.schedule_id, cs.schedule_date, cs.schedule_time,
               s.name AS subject_name,
               u.name AS teacher_name
        FROM class_schedule cs
@@ -94,8 +89,8 @@ export async function getUpcomingClasses(req, res, next) {
        WHERE cs.schedule_id IN (
          SELECT schedule_id FROM class_students WHERE user_id = ?
        )
-       AND cs.class_date >= CURDATE()
-       ORDER BY cs.class_date ASC, cs.start_time ASC
+       AND cs.schedule_date >= CURDATE()
+       ORDER BY cs.schedule_date ASC, cs.schedule_time ASC
        LIMIT 5`,
       [user_id]
     );
@@ -111,14 +106,14 @@ export async function getLatestQuizResults(req, res, next) {
     const { user_id } = req.user;
 
     const [rows] = await db.query(
-      `SELECT qr.result_id, qr.score, qr.started_at, qr.finished_at,
+            `SELECT qr.result_id, qr.score, qr.completed_at,
               q.title AS quiz_title, q.quiz_id,
               s.name AS subject_name
        FROM quiz_results qr
        JOIN quizzes q ON qr.quiz_id = q.quiz_id
        JOIN subjects s ON q.subject_id = s.subject_id
        WHERE qr.user_id = ?
-       ORDER BY qr.finished_at DESC
+             ORDER BY qr.completed_at DESC
        LIMIT 10`,
       [user_id]
     );

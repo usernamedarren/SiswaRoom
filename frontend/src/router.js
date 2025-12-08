@@ -1,17 +1,19 @@
-import { DashboardPage } from "./pages/dashboard.js";
-import { SubjectsPage } from "./pages/subjects.js";
-import { TopicsPage } from "./pages/topics.js";
-import { TopicDetailPage } from "./pages/topicDetail.js";
-import { LoginPage } from "./pages/login.js";
-import { RegisterPage } from "./pages/register.js";
-import { SchedulesPage } from "./pages/schedules.js";
-import { QuizzesPage, QuizTakePage, QuizResultsPage } from "./pages/quizzes.js";
-import { CoursesPage, CourseDetailPage } from "./pages/courses.js";
+import { initLogin } from "./pages/logic/loginLogic.js";
+import { initRegister } from "./pages/logic/registerLogic.js";
+import { initDashboard } from "./pages/logic/dashboardLogic.js";
+import { initSubjects } from "./pages/logic/subjectsLogic.js";
+import { initSubject } from "./pages/logic/subjectLogic.js";
+import { initTopicDetail } from "./pages/logic/topicDetailLogic.js";
+import { initSchedules } from "./pages/logic/schedulesLogic.js";
+import { initQuizzes } from "./pages/logic/quizzesLogic.js";
+import { initAdmin } from "./pages/logic/adminLogic.js";
+import { initCourses } from "./pages/logic/coursesLogic.js";
 import { AuthService } from "./utils/auth.js";
 
 // routes that require authentication
-const protectedRoutes = ["", "subjects", "materi", "jadwal", "kuis", "courses", "quiz"];
+const protectedRoutes = ["", "subjects", "materi", "jadwal", "kuis", "courses", "quiz", "admin"];
 const authOnlyRoutes = ["login", "register"];
+const adminOnlyRoutes = ["admin"];
 
 export function router() {
   const app = document.getElementById("app");
@@ -22,6 +24,7 @@ export function router() {
   const [, subjectId, materialId] = segments;
 
   const isAuth = AuthService.isAuthenticated();
+  const user = AuthService.getUser();
 
   // redirect logged-in users from login/register
   if (isAuth && authOnlyRoutes.includes(root)) {
@@ -35,27 +38,39 @@ export function router() {
     return;
   }
 
+  // require admin role for admin routes
+  if (isAuth && adminOnlyRoutes.includes(root) && user?.role !== 'admin') {
+    alert('Access denied. Admin only.');
+    window.location.hash = "#/";
+    return;
+  }
+
   // login page
   if (root === "login") {
-    app.innerHTML = LoginPage();
+    initLogin(app);
     return;
   }
 
   // register page
   if (root === "register") {
-    app.innerHTML = RegisterPage();
+    initRegister(app);
     return;
   }
 
   // dashboard
   if (segments.length === 0) {
-    app.innerHTML = DashboardPage();
+    initDashboard(app);
     return;
   }
 
   // subjects
   if (root === "subjects") {
-    app.innerHTML = SubjectsPage();
+    if (!subjectId) {
+      initSubjects(app);
+      return;
+    }
+    // Single subject view
+    initSubject(app, subjectId);
     return;
   }
 
@@ -65,53 +80,31 @@ export function router() {
       window.location.hash = "#/subjects";
       return;
     }
-    if (!materialId) {
-      app.innerHTML = TopicsPage(subjectId);
-      return;
-    }
-    app.innerHTML = TopicDetailPage(subjectId, materialId);
+    initTopicDetail(app, subjectId);
     return;
   }
 
   // jadwal/schedules
   if (root === "jadwal") {
-    app.innerHTML = SchedulesPage();
+    initSchedules(app);
     return;
   }
 
   // kuis/quizzes
   if (root === "kuis") {
-    app.innerHTML = QuizzesPage();
-    return;
-  }
-
-  // Quiz taking
-  if (root === "quiz") {
-    if (!subjectId) {
-      window.location.hash = "#/kuis";
-      return;
-    }
-    app.innerHTML = QuizTakePage(subjectId);
-    return;
-  }
-
-  // Quiz results
-  if (root === "quiz-results") {
-    if (!subjectId) {
-      window.location.hash = "#/kuis";
-      return;
-    }
-    app.innerHTML = QuizResultsPage(subjectId);
+    initQuizzes(app);
     return;
   }
 
   // Courses
   if (root === "courses") {
-    if (!subjectId) {
-      app.innerHTML = CoursesPage();
-      return;
-    }
-    app.innerHTML = CourseDetailPage(subjectId);
+    initCourses(app);
+    return;
+  }
+
+  // Admin panel
+  if (root === "admin") {
+    initAdmin(app);
     return;
   }
 

@@ -1,4 +1,15 @@
 import { MaterialModel } from "../models/MaterialModel.js";
+import db from "../config/db.js";
+
+// GET /api/materials - List all materials
+export async function listMaterials(req, res, next) {
+  try {
+    const materials = await MaterialModel.getAll();
+    res.json({ success: true, data: materials });
+  } catch (err) {
+    next(err);
+  }
+}
 
 // GET /api/materials/:id - Get single material
 export async function getMaterial(req, res, next) {
@@ -22,27 +33,23 @@ export async function getMaterial(req, res, next) {
   }
 }
 
-// POST /api/subjects/:subjectId/materials - Create material
+// POST /api/materials - Create material
 export async function createMaterial(req, res, next) {
   try {
-    const { subjectId } = req.params;
-    const { title, description, content, content_type, file_url, video_url, order } = req.body;
+    const { title, description, content, content_type, order } = req.body;
 
     if (!title || !content_type) {
       return res.status(400).json({
         success: false,
-        message: "Judul dan tipe konten wajib diisi"
+        message: "title dan content_type wajib diisi"
       });
     }
 
     const material = await MaterialModel.create({
-      subject_id: subjectId,
       title,
       description,
       content,
       content_type,
-      file_url,
-      video_url,
       order: order || 1,
       created_by: req.user.user_id
     });
@@ -61,7 +68,7 @@ export async function createMaterial(req, res, next) {
 export async function updateMaterial(req, res, next) {
   try {
     const { id } = req.params;
-    const { title, description, content, content_type, file_url, video_url, order } = req.body;
+    const { title, description, content, content_type, order } = req.body;
 
     const material = await MaterialModel.getById(id);
     if (!material) {
@@ -76,8 +83,6 @@ export async function updateMaterial(req, res, next) {
       description,
       content,
       content_type,
-      file_url,
-      video_url,
       order
     });
 

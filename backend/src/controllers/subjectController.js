@@ -41,7 +41,7 @@ export async function getSubjectDetail(req, res, next) {
 export async function getSubjectMaterials(req, res, next) {
   try {
     const { id } = req.params;
-    const materials = await MaterialModel.getBySubject(id);
+    const materials = await MaterialModel.getAll();
     res.json({
       success: true,
       data: materials

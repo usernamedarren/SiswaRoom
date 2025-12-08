@@ -8,3 +8,6 @@ export function requireRole(...roles) {
     next();
   };
 }
+
+// Alias for backward compatibility
+export const roleMiddleware = requireRole;

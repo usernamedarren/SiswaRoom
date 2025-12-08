@@ -47,12 +47,11 @@ export async function getQuizDetail(req, res, next) {
 
     // Get questions in quiz
     const [questions] = await db.query(
-      `SELECT q.question_id, q.question_text, q.option_a, q.option_b, 
-              q.option_c, q.option_d, q.difficulty
+      `SELECT q.question_id, q.question AS question_text, q.answer
        FROM questions q
        JOIN quiz_questions qq ON q.question_id = qq.question_id
        WHERE qq.quiz_id = ?
-       ORDER BY qq.question_id ASC`,
+       ORDER BY qq.question_order ASC`,
       [id]
     );
 
@@ -81,10 +80,10 @@ export async function startQuiz(req, res, next) {
       return res.status(404).json({ message: "Quiz tidak ditemukan" });
     }
 
-    // Create quiz result
+    // Create quiz result (started)
     const [result] = await db.query(
-      `INSERT INTO quiz_results (quiz_id, user_id, score, started_at, finished_at)
-       VALUES (?, ?, 0, NOW(), NULL)`,
+      `INSERT INTO quiz_results (quiz_id, user_id, score, passed, completed_at)
+       VALUES (?, ?, NULL, 0, NULL)`,
       [id, user_id]
     );
 
@@ -92,7 +91,6 @@ export async function startQuiz(req, res, next) {
       result_id: result.insertId,
       quiz_id: id,
       user_id,
-      started_at: new Date(),
       message: "Quiz dimulai"
     });
   } catch (err) {
@@ -104,7 +102,7 @@ export async function startQuiz(req, res, next) {
 export async function submitQuiz(req, res, next) {
   try {
     const { result_id } = req.params;
-    const { answers } = req.body; // Array of {question_id, selected_option}
+    const { answers } = req.body; // Array of {question_id, selected_option or selected_answer}
     const { user_id } = req.user;
 
     // Validate result exists
@@ -122,22 +120,16 @@ export async function submitQuiz(req, res, next) {
     const totalQuestions = answers.length;
 
     for (const answer of answers) {
-      // Get correct answer
+      // Normalize selected answer key (frontend sends selected_option)
+      const selected = answer.selected_option ?? answer.selected_answer;
+
       const [questions] = await db.query(
-        "SELECT correct_option FROM questions WHERE question_id = ?",
+        "SELECT answer FROM questions WHERE question_id = ?",
         [answer.question_id]
       );
 
       if (questions[0]) {
-        const isCorrect = answer.selected_option === questions[0].correct_option;
-
-        // Save answer
-        await db.query(
-          `INSERT INTO quiz_answers (result_id, question_id, selected_option, is_correct)
-           VALUES (?, ?, ?, ?)`,
-          [result_id, answer.question_id, answer.selected_option, isCorrect ? 1 : 0]
-        );
-
+        const isCorrect = String(selected ?? "").trim() === String(questions[0].answer ?? "").trim();
         if (isCorrect) score++;
       }
     }
@@ -146,16 +138,24 @@ export async function submitQuiz(req, res, next) {
     const scorePercentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
 
     // Update quiz result
+    // Determine passing based on quiz's passing_score
+    const [[quizInfo]] = await db.query(
+      "SELECT passing_score FROM quizzes WHERE quiz_id = ?",
+      [results[0].quiz_id]
+    );
+    const passed = quizInfo ? scorePercentage >= (quizInfo.passing_score || 0) : 0;
+
     await db.query(
       `UPDATE quiz_results 
-       SET score = ?, finished_at = NOW()
+       SET score = ?, passed = ?, completed_at = NOW()
        WHERE result_id = ?`,
-      [scorePercentage, result_id]
+      [scorePercentage, passed ? 1 : 0, result_id]
     );
 
     res.json({
       result_id,
       score: scorePercentage,
+      passed,
       correct_answers: score,
       total_questions: totalQuestions,
       message: "Quiz selesai"
@@ -171,13 +171,13 @@ export async function getUserQuizResults(req, res, next) {
     const { user_id } = req.user;
 
     const [results] = await db.query(
-      `SELECT qr.result_id, qr.quiz_id, qr.score, qr.started_at, qr.finished_at,
+            `SELECT qr.result_id, qr.quiz_id, qr.score, qr.completed_at,
               q.title as quiz_title, s.name as subject_name
        FROM quiz_results qr
        JOIN quizzes q ON qr.quiz_id = q.quiz_id
        JOIN subjects s ON q.subject_id = s.subject_id
        WHERE qr.user_id = ?
-       ORDER BY qr.finished_at DESC`,
+             ORDER BY qr.completed_at DESC`,
       [user_id]
     );
 
@@ -195,7 +195,11 @@ export async function getQuizResult(req, res, next) {
 
     // Get result
     const [results] = await db.query(
-      `SELECT * FROM quiz_results WHERE result_id = ? AND user_id = ?`,
+      `SELECT qr.*, q.title AS quiz_title, s.name AS subject_name
+       FROM quiz_results qr
+       JOIN quizzes q ON qr.quiz_id = q.quiz_id
+       JOIN subjects s ON q.subject_id = s.subject_id
+       WHERE qr.result_id = ? AND qr.user_id = ?`,
       [result_id, user_id]
     );
 
@@ -203,20 +207,7 @@ export async function getQuizResult(req, res, next) {
       return res.status(404).json({ message: "Hasil quiz tidak ditemukan" });
     }
 
-    // Get answers detail
-    const [answers] = await db.query(
-      `SELECT qa.answer_id, qa.question_id, qa.selected_option, qa.is_correct,
-              q.question_text, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option
-       FROM quiz_answers qa
-       JOIN questions q ON qa.question_id = q.question_id
-       WHERE qa.result_id = ?`,
-      [result_id]
-    );
-
-    const result = results[0];
-    result.answers = answers;
-
-    res.json(result);
+    res.json(results[0]);
   } catch (err) {
     next(err);
   }

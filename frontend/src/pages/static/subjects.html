@@ -1,0 +1,31 @@
+<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+  <div style="margin-bottom: 3rem;">
+    <h1 style="color: #7c3aed; font-size: 2.5rem; font-weight: 700; margin: 0; margin-bottom: 0.5rem;">
+      📚 Mata Pelajaran
+    </h1>
+    <p style="color: #64748b; font-size: 1.1rem; margin: 0;">
+      Jelajahi semua mata pelajaran yang tersedia
+    </p>
+  </div>
+
+  <!-- Filter -->
+  <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+    <select id="category-filter" style="padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer;">
+      <option value="">Semua Kategori</option>
+    </select>
+    <input type="text" id="search-subjects" placeholder="Cari mata pelajaran..." style="flex: 1; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; background: white;">
+  </div>
+
+  <!-- Subjects Grid -->
+  <div id="subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
+      <p style="color: #64748b;">Memuat mata pelajaran...</p>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div id="no-subjects" style="display: none; text-align: center; padding: 3rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+    <p style="color: #64748b; font-size: 1.1rem;">Tidak ada mata pelajaran ditemukan</p>
+  </div>
+</div>

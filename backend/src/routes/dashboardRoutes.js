@@ -19,5 +19,7 @@ router.get("/user-stats", getUserStats);
 router.get("/classes", getUpcomingClasses);
 router.get("/quiz-results", getLatestQuizResults);
 router.get("/progress", getProgress);
+// Alias for frontend expectation
+router.get("/stats", getDashboardSummary);
 
 export default router;

@@ -1,0 +1,94 @@
+<div style="max-width: 1600px; margin: 0 auto; padding: 2rem;">
+  <div style="margin-bottom: 3rem;">
+    <h1 style="color: #7c3aed; font-size: 2.5rem; font-weight: 700; margin: 0; margin-bottom: 0.5rem;">
+      🔐 Admin Panel
+    </h1>
+    <p style="color: #64748b; font-size: 1.1rem; margin: 0;">
+      Kelola semua konten dan data sistem SiswaRoom
+    </p>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div id="admin-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 12px; color: white;">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Total Users</p>
+      <div style="font-size: 2.5rem; font-weight: 700;" id="stat-users">-</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.5rem; border-radius: 12px; color: white;">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Subjects</p>
+      <div style="font-size: 2.5rem; font-weight: 700;" id="stat-subjects">-</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.5rem; border-radius: 12px; color: white;">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Topics</p>
+      <div style="font-size: 2.5rem; font-weight: 700;" id="stat-topics">-</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.5rem; border-radius: 12px; color: #333;">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Materials</p>
+      <div style="font-size: 2.5rem; font-weight: 700;" id="stat-materials">-</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); padding: 1.5rem; border-radius: 12px; color: white;">
+      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.9;">Questions</p>
+      <div style="font-size: 2.5rem; font-weight: 700;" id="stat-questions">-</div>
+    </div>
+  </div>
+
+  <!-- Management Tabs -->
+  <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+    <div style="display: flex; border-bottom: 2px solid #e2e8f0; overflow-x: auto;">
+      <button class="admin-tab" data-tab="subjects" onclick="switchAdminTab('subjects')" style="padding: 1rem 2rem; background: #7c3aed; color: white; border: none; font-weight: 600; cursor: pointer;">
+        📚 Subjects
+      </button>
+      <button class="admin-tab" data-tab="materials" onclick="switchAdminTab('materials')" style="padding: 1rem 2rem; background: white; color: #64748b; border: none; font-weight: 600; cursor: pointer;">
+        📝 Materials
+      </button>
+      <button class="admin-tab" data-tab="questions" onclick="switchAdminTab('questions')" style="padding: 1rem 2rem; background: white; color: #64748b; border: none; font-weight: 600; cursor: pointer;">
+        ❓ Questions
+      </button>
+      <button class="admin-tab" data-tab="quizzes" onclick="switchAdminTab('quizzes')" style="padding: 1rem 2rem; background: white; color: #64748b; border: none; font-weight: 600; cursor: pointer;">
+        🎯 Quizzes
+      </button>
+    </div>
+
+    <div style="padding: 2rem;">
+      <!-- Subjects Tab -->
+      <div id="tab-subjects" style="display: block;">
+        <div style="margin-bottom: 1rem;">
+          <button onclick="showAddSubjectForm()" style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            + Tambah Mata Pelajaran
+          </button>
+        </div>
+        <div id="subjects-list"></div>
+      </div>
+
+      <!-- Materials Tab -->
+      <div id="tab-materials" style="display: none;">
+        <div style="margin-bottom: 1rem;">
+          <button onclick="showAddMaterialForm()" style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            + Tambah Materi
+          </button>
+        </div>
+        <div id="materials-list"></div>
+      </div>
+
+      <!-- Questions Tab -->
+      <div id="tab-questions" style="display: none;">
+        <div style="margin-bottom: 1rem;">
+          <button onclick="showAddQuestionForm()" style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            + Tambah Pertanyaan
+          </button>
+        </div>
+        <div id="questions-list"></div>
+      </div>
+
+      <!-- Quizzes Tab -->
+      <div id="tab-quizzes" style="display: none;">
+        <div style="margin-bottom: 1rem;">
+          <button onclick="showAddQuizForm()" style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            + Tambah Kuis
+          </button>
+        </div>
+        <div id="quizzes-list"></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -22,6 +22,9 @@ export function protect(req, res, next) {
   }
 }
 
+// Alias for backward compatibility
+export const authMiddleware = protect;
+
 export function requireRole(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {

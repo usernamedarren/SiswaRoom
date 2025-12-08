@@ -136,6 +136,25 @@ export function Navbar() {
             " onmouseover="this.style.backgroundColor = 'rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor = 'transparent'">
               📚 Kursus Saya
             </a>
+            ${user?.role === 'admin' ? `
+            <a href="#/admin" style="
+              padding: 0.75rem 1.25rem;
+              color: white;
+              text-decoration: none;
+              font-weight: 600;
+              font-size: 0.95rem;
+              transition: all 0.3s;
+              border-bottom: 3px solid transparent;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              background: rgba(255, 255, 255, 0.15);
+              border-radius: 8px;
+              ${current === '#/admin' ? 'border-bottom-color: white;' : ''}
+            " onmouseover="this.style.backgroundColor = 'rgba(255,255,255,0.25)'" onmouseout="this.style.backgroundColor = 'rgba(255,255,255,0.15)'">
+              🔐 Admin Panel
+            </a>
+            ` : ''}
           </nav>
         ` : ''}
 

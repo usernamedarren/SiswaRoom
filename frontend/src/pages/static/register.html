@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar - SiswaRoom</title>
+</head>
+<body>
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem;">
+    <div style="width: 100%; max-width: 450px; background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+      
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #1e293b; font-size: 1.8rem; margin: 0 0 0.5rem 0; font-weight: 700;">Daftar ke SiswaRoom</h1>
+        <p style="color: #64748b; margin: 0;">Bergabunglah dengan platform pembelajaran kami</p>
+      </div>
+
+      <div id="error-message" style="display: none; background: #fee; color: #c00; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; border: 1px solid #fcc;"></div>
+
+      <div id="success-message" style="display: none; background: #efe; color: #080; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; border: 1px solid #beb;"></div>
+
+      <form id="register-form">
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; color: #1e293b; font-weight: 600; margin-bottom: 0.5rem;">Nama Lengkap</label>
+          <input id="name" type="text" placeholder="Nama Anda" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; color: #1e293b; font-weight: 600; margin-bottom: 0.5rem;">Email</label>
+          <input id="email" type="email" placeholder="nama@email.com" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; color: #1e293b; font-weight: 600; margin-bottom: 0.5rem;">Password</label>
+          <input id="password" type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; color: #1e293b; font-weight: 600; margin-bottom: 0.5rem;">Konfirmasi Password</label>
+          <input id="confirm-password" type="password" placeholder="••••••••" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.3s;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <label style="display: block; color: #1e293b; font-weight: 600; margin-bottom: 0.5rem;">Tipe Akun</label>
+          <select id="role" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.3s; background: white; cursor: pointer;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e2e8f0'">
+            <option value="siswa">Siswa</option>
+            <option value="guru">Guru</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <button id="submit-btn" type="submit" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.875rem 1rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          Daftar
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+        <p style="color: #64748b; margin: 0 0 0.5rem 0;">Sudah punya akun?</p>
+        <a href="#/login" style="color: #667eea; text-decoration: none; font-weight: 600; transition: color 0.3s;" onmouseover="this.style.color='#764ba2'" onmouseout="this.style.color='#667eea'">Masuk di sini</a>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
