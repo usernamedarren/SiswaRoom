@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
-  # Backend Node.js Service
-  backend:
+  siswaroom-backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: siswaroom-backend-new
+    container_name: siswaroom-backend
     restart: always
     ports:
       - "4001:4000"
