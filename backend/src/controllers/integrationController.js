@@ -98,6 +98,108 @@ export async function getCoursesForIntegration(req, res) {
 }
 
 /**
+ * GET /api/integration/schedules
+ * Get class schedules with teacher and room info
+ */
+export async function getSchedulesForIntegration(req, res) {
+  try {
+    const query = `
+      SELECT 
+        sch.id,
+        sch.subject_id,
+        s.name as subject_name,
+        sch.teacher_id,
+        u.name as teacher_name,
+        u.email as teacher_email,
+        sch.room,
+        sch.day,
+        sch.start_time,
+        sch.end_time,
+        COUNT(DISTINCT uc.user_id) as students_count
+      FROM schedules sch
+      LEFT JOIN subjects s ON sch.subject_id = s.id
+      LEFT JOIN users u ON sch.teacher_id = u.id
+      LEFT JOIN user_courses uc ON s.id = uc.course_id
+      GROUP BY sch.id, sch.subject_id, s.name, sch.teacher_id, u.name, u.email, sch.room, sch.day, sch.start_time, sch.end_time
+      ORDER BY sch.day, sch.start_time
+      LIMIT 500
+    `;
+
+    const [results] = await db.query(query);
+
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(schedule => ({
+        id: schedule.id,
+        subjectId: schedule.subject_id,
+        subjectName: schedule.subject_name,
+        teacherId: schedule.teacher_id,
+        teacherName: schedule.teacher_name,
+        teacherEmail: schedule.teacher_email,
+        room: schedule.room,
+        day: schedule.day,
+        startTime: schedule.start_time,
+        endTime: schedule.end_time,
+        studentCount: schedule.students_count
+      }))
+    });
+  } catch (err) {
+    console.error("[INTEGRATION] Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+/**
+ * GET /api/integration/quizzes
+ * Get quizzes with results and difficulty info
+ */
+export async function getQuizzesForIntegration(req, res) {
+  try {
+    const query = `
+      SELECT 
+        q.id,
+        q.subject_id,
+        s.name as subject_name,
+        q.title,
+        q.description,
+        q.duration,
+        q.passing_score,
+        COUNT(DISTINCT qr.id) as total_attempts,
+        AVG(qr.score) as avg_score,
+        q.created_at
+      FROM quizzes q
+      LEFT JOIN subjects s ON q.subject_id = s.id
+      LEFT JOIN quiz_results qr ON q.id = qr.quiz_id
+      GROUP BY q.id, q.subject_id, s.name, q.title, q.description, q.duration, q.passing_score, q.created_at
+      ORDER BY q.created_at DESC
+      LIMIT 500
+    `;
+
+    const [results] = await db.query(query);
+
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(quiz => ({
+        id: quiz.id,
+        subjectId: quiz.subject_id,
+        subjectName: quiz.subject_name,
+        title: quiz.title,
+        description: quiz.description,
+        duration: quiz.duration,
+        passingScore: quiz.passing_score,
+        totalAttempts: quiz.total_attempts,
+        averageScore: parseFloat(quiz.avg_score || 0).toFixed(2),
+        createdAt: quiz.created_at
+      }))
+    });
+  } catch (err) {
+    console.error("[INTEGRATION] Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}
+/**
  * POST /api/integration/sync-grades
  * Receive and sync grades/scores from partner platform
  * Body: { studentId, courseId, grade, source }
@@ -125,7 +227,7 @@ export async function syncGrades(req, res) {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    // Create sync record in grades table
+    // Create sync record
     const syncQuery = `
       INSERT INTO grade_sync (student_id, subject_id, grade, source, sync_date)
       VALUES (?, ?, ?, ?, NOW())
