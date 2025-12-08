@@ -31,26 +31,21 @@ export async function getStudentsForIntegration(req, res) {
       LIMIT 1000
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("[INTEGRATION] Error fetching students:", err);
-        return res.status(500).json({ error: "Failed to fetch students" });
-      }
+    const [results] = await db.query(query);
 
-      res.json({
-        success: true,
-        count: results.length,
-        data: results.map(student => ({
-          id: student.id,
-          name: student.name,
-          email: student.email,
-          role: student.role,
-          enrolledCourses: student.enrolled_courses,
-          quizzesTaken: student.quizzes_taken,
-          averageScore: parseFloat(student.avg_score || 0).toFixed(2),
-          joinDate: student.created_at
-        }))
-      });
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(student => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        role: student.role,
+        enrolledCourses: student.enrolled_courses,
+        quizzesTaken: student.quizzes_taken,
+        averageScore: parseFloat(student.avg_score || 0).toFixed(2),
+        joinDate: student.created_at
+      }))
     });
   } catch (err) {
     console.error("[INTEGRATION] Error:", err);
@@ -81,28 +76,26 @@ export async function getCoursesForIntegration(req, res) {
       LIMIT 1000
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("[INTEGRATION] Error fetching courses:", err);
-        return res.status(500).json({ error: "Failed to fetch courses" });
-      }
+    const [results] = await db.query(query);
 
-      res.json({
-        success: true,
-        count: results.length,
-        data: results.map(course => ({
-          id: course.id,
-          name: course.name,
-          description: course.description,
-          category: course.category,
-          totalEnrolled: course.total_enrolled,
-          totalMaterials: course.total_materials,
-          createdAt: course.created_at
-        }))
-      });
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(course => ({
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        category: course.category,
+        totalEnrolled: course.total_enrolled,
+        totalMaterials: course.total_materials,
+        createdAt: course.created_at
+      }))
     });
   } catch (err) {
     console.error("[INTEGRATION] Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}
     res.status(500).json({ error: err.message });
   }
 }
@@ -135,29 +128,24 @@ export async function getSchedulesForIntegration(req, res) {
       LIMIT 500
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("[INTEGRATION] Error fetching schedules:", err);
-        return res.status(500).json({ error: "Failed to fetch schedules" });
-      }
+    const [results] = await db.query(query);
 
-      res.json({
-        success: true,
-        count: results.length,
-        data: results.map(schedule => ({
-          id: schedule.id,
-          subjectId: schedule.subject_id,
-          subjectName: schedule.subject_name,
-          teacherId: schedule.teacher_id,
-          teacherName: schedule.teacher_name,
-          teacherEmail: schedule.teacher_email,
-          room: schedule.room,
-          day: schedule.day,
-          startTime: schedule.start_time,
-          endTime: schedule.end_time,
-          studentCount: schedule.students_count
-        }))
-      });
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(schedule => ({
+        id: schedule.id,
+        subjectId: schedule.subject_id,
+        subjectName: schedule.subject_name,
+        teacherId: schedule.teacher_id,
+        teacherName: schedule.teacher_name,
+        teacherEmail: schedule.teacher_email,
+        room: schedule.room,
+        day: schedule.day,
+        startTime: schedule.start_time,
+        endTime: schedule.end_time,
+        studentCount: schedule.students_count
+      }))
     });
   } catch (err) {
     console.error("[INTEGRATION] Error:", err);
@@ -191,20 +179,29 @@ export async function getQuizzesForIntegration(req, res) {
       LIMIT 500
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("[INTEGRATION] Error fetching quizzes:", err);
-        return res.status(500).json({ error: "Failed to fetch quizzes" });
-      }
+    const [results] = await db.query(query);
 
-      res.json({
-        success: true,
-        count: results.length,
-        data: results.map(quiz => ({
-          id: quiz.id,
-          subjectId: quiz.subject_id,
-          subjectName: quiz.subject_name,
-          title: quiz.title,
+    res.json({
+      success: true,
+      count: results.length,
+      data: results.map(quiz => ({
+        id: quiz.id,
+        subjectId: quiz.subject_id,
+        subjectName: quiz.subject_name,
+        title: quiz.title,
+        description: quiz.description,
+        duration: quiz.duration,
+        passingScore: quiz.passing_score,
+        totalAttempts: quiz.total_attempts,
+        averageScore: parseFloat(quiz.avg_score || 0).toFixed(2),
+        createdAt: quiz.created_at
+      }))
+    });
+  } catch (err) {
+    console.error("[INTEGRATION] Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}
           description: quiz.description,
           durationMinutes: quiz.duration,
           passingScore: quiz.passing_score,
