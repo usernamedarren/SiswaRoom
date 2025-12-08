@@ -10,8 +10,8 @@ services:
     restart: always
     networks:
       - siswaroom-network
-    expose:
-      - "4000"
+    ports:
+      - "4000:4000"
     environment:
       DB_HOST: ${DB_HOST:-mysql_siswaroom-mysql_siswaroom-1}
       DB_PORT: ${DB_PORT:-3306}
