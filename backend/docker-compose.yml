@@ -6,7 +6,7 @@ services:
     container_name: siswaroom-backend
     restart: always
     networks:
-      - siswaroom-network
+      - siswaroom-net
     ports:
       - "4000:4000"
     environment:
@@ -29,6 +29,5 @@ services:
 volumes: {}
 
 networks:
-  siswaroom-network:
+  siswaroom-net:
     external: true
-    name: siswaroom-net

@@ -9,7 +9,7 @@ services:
     container_name: siswaroom-backend
     restart: always
     networks:
-      - siswaroom-network
+      - siswaroom-net
     ports:
       - "4000:4000"
     environment:
@@ -39,7 +39,7 @@ services:
     container_name: siswaroom-frontend
     restart: always
     networks:
-      - siswaroom-network
+      - siswaroom-net
     ports:
       - "${FRONTEND_HTTP_PORT:-8080}:80"
       - "${FRONTEND_HTTPS_PORT:-8443}:443"
@@ -54,8 +54,7 @@ services:
       start_period: 20s
 
 networks:
-  siswaroom-network:
+  siswaroom-net:
     external: true
-    name: siswaroom-net
 
 volumes: {}
