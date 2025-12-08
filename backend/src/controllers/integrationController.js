@@ -20,11 +20,11 @@ export async function getStudentsForIntegration(req, res) {
         u.role,
         u.created_at,
         COUNT(DISTINCT uc.course_id) as enrolled_courses,
-        COUNT(DISTINCT q.id) as quizzes_taken,
-        AVG(q.score) as avg_score
+        COUNT(DISTINCT qr.id) as quizzes_taken,
+        AVG(qr.score) as avg_score
       FROM users u
       LEFT JOIN user_courses uc ON u.id = uc.user_id
-      LEFT JOIN quizzes q ON u.id = q.user_id
+      LEFT JOIN quiz_results qr ON u.id = qr.student_id
       WHERE u.role = 'student'
       GROUP BY u.id, u.name, u.email, u.role, u.created_at
       ORDER BY u.created_at DESC
@@ -64,14 +64,14 @@ export async function getCoursesForIntegration(req, res) {
         s.id,
         s.name,
         s.description,
-        s.category,
+        s.teacher_id,
         COUNT(DISTINCT uc.user_id) as total_enrolled,
         COUNT(DISTINCT m.id) as total_materials,
         s.created_at
       FROM subjects s
       LEFT JOIN user_courses uc ON s.id = uc.course_id
-      LEFT JOIN materials m ON s.id = m.subject_id
-      GROUP BY s.id, s.name, s.description, s.category, s.created_at
+      LEFT JOIN materials m ON s.id = m.course_id
+      GROUP BY s.id, s.name, s.description, s.teacher_id, s.created_at
       ORDER BY s.created_at DESC
       LIMIT 1000
     `;
@@ -85,7 +85,7 @@ export async function getCoursesForIntegration(req, res) {
         id: course.id,
         name: course.name,
         description: course.description,
-        category: course.category,
+        teacherId: course.teacher_id,
         totalEnrolled: course.total_enrolled,
         totalMaterials: course.total_materials,
         createdAt: course.created_at
@@ -159,7 +159,7 @@ export async function getQuizzesForIntegration(req, res) {
     const query = `
       SELECT 
         q.id,
-        q.subject_id,
+        q.course_id,
         s.name as subject_name,
         q.title,
         q.description,
@@ -169,9 +169,9 @@ export async function getQuizzesForIntegration(req, res) {
         AVG(qr.score) as avg_score,
         q.created_at
       FROM quizzes q
-      LEFT JOIN subjects s ON q.subject_id = s.id
+      LEFT JOIN subjects s ON q.course_id = s.id
       LEFT JOIN quiz_results qr ON q.id = qr.quiz_id
-      GROUP BY q.id, q.subject_id, s.name, q.title, q.description, q.duration, q.passing_score, q.created_at
+      GROUP BY q.id, q.course_id, s.name, q.title, q.description, q.duration, q.passing_score, q.created_at
       ORDER BY q.created_at DESC
       LIMIT 500
     `;
@@ -183,7 +183,7 @@ export async function getQuizzesForIntegration(req, res) {
       count: results.length,
       data: results.map(quiz => ({
         id: quiz.id,
-        subjectId: quiz.subject_id,
+        courseId: quiz.course_id,
         subjectName: quiz.subject_name,
         title: quiz.title,
         description: quiz.description,
@@ -229,7 +229,7 @@ export async function syncGrades(req, res) {
 
     // Create sync record
     const syncQuery = `
-      INSERT INTO grade_sync (student_id, subject_id, grade, source, sync_date)
+      INSERT INTO grade_sync (student_id, course_id, grade, synced_from, sync_date)
       VALUES (?, ?, ?, ?, NOW())
       ON DUPLICATE KEY UPDATE 
         grade = VALUES(grade),
