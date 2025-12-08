@@ -9,6 +9,7 @@ import dashboardRoutes from "./dashboardRoutes.js";
 import courseRoutes from "./courseRoutes.js";
 import topicRoutes from "./topicRoutes.js";
 import userRoutes from "./userRoutes.js";
+import integrationRoutes from "./integrationRoutes.js";
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/courses", courseRoutes);
 router.use("/topics", topicRoutes);
 router.use("/users", userRoutes);
+router.use("/integration", integrationRoutes);
 
 export default router;
