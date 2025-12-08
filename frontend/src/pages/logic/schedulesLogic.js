@@ -3,11 +3,18 @@ import { AuthService } from "../../utils/auth.js";
 
 // Load schedules page static HTML
 export async function initSchedules(container) {
-  const html = await fetch("./src/pages/static/schedules.html").then(r => r.text());
-  container.innerHTML = html;
-  
-  // Initialize logic
-  loadSchedules();
+  try {
+    const response = await fetch(new URL('../static/schedules.html', import.meta.url).href);
+    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
+    const html = await response.text();
+    container.innerHTML = html;
+    
+    // Initialize logic
+    loadSchedules();
+  } catch (err) {
+    console.error('[SCHEDULES] Failed to load HTML:', err);
+    container.innerHTML = '<p>Error loading schedules page. Please refresh.</p>';
+  }
 }
 
 async function loadSchedules() {

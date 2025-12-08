@@ -2,12 +2,19 @@ import { API_BASE } from "../../config/api.js";
 import { AuthService } from "../../utils/auth.js";
 
 export async function initAdmin(container) {
-  const html = await fetch("./src/pages/static/admin.html").then(r => r.text());
-  container.innerHTML = html;
-  
-  setupAdminTabs();
-  loadAdminStats();
-  loadSubjectsTable();
+  try {
+    const response = await fetch(new URL('../static/admin.html', import.meta.url).href);
+    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
+    const html = await response.text();
+    container.innerHTML = html;
+    
+    setupAdminTabs();
+    loadAdminStats();
+    loadSubjectsTable();
+  } catch (err) {
+    console.error('[ADMIN] Failed to load HTML:', err);
+    container.innerHTML = '<p>Error loading admin page. Please refresh.</p>';
+  }
 }
 
 function setupAdminTabs() {

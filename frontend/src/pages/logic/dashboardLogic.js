@@ -3,15 +3,22 @@ import { AuthService } from "../../utils/auth.js";
 
 // Load dashboard static HTML
 export async function initDashboard(container) {
-  const html = await fetch("./src/pages/static/dashboard.html").then(r => r.text());
-  container.innerHTML = html;
-  
-  // Initialize logic
-  loadDashboardStats();
-  loadMyCourses();
-  loadUpcomingClasses();
-  loadRecentActivity();
-  setupAdminLink();
+  try {
+    const response = await fetch(new URL('../static/dashboard.html', import.meta.url).href);
+    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
+    const html = await response.text();
+    container.innerHTML = html;
+    
+    // Initialize logic
+    loadDashboardStats();
+    loadMyCourses();
+    loadUpcomingClasses();
+    loadRecentActivity();
+    setupAdminLink();
+  } catch (err) {
+    console.error('[DASHBOARD] Failed to load HTML:', err);
+    container.innerHTML = '<p>Error loading dashboard. Please refresh.</p>';
+  }
 }
 
 async function loadDashboardStats() {
