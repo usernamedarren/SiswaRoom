@@ -4,10 +4,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Determine correct MySQL host for aPanel Docker
-let dbHost = process.env.DB_HOST || "127.0.0.1";
+let dbHost = process.env.DB_HOST || "host.docker.internal";
 
-// For aPanel Docker containers: localhost/127.0.0.1 routes to host via gateway
-// No special handling needed - Docker network handles it
+// For aPanel Linux Docker: host.docker.internal maps to host gateway
+// This allows container to access MySQL running on host (port 13306)
+console.log("[DB] Docker MySQL Access:");
+console.log("   Using host.docker.internal via extra_hosts mapping");
+console.log("   This routes to host machine's network gateway");
 
 // Log connection details
 console.log("[DB] Connecting to MySQL with config:");

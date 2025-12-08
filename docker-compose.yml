@@ -13,7 +13,7 @@ services:
     expose:
       - "4000"
     environment:
-      DB_HOST: ${DB_HOST:-127.0.0.1}
+      DB_HOST: ${DB_HOST:-host.docker.internal}
       DB_PORT: ${DB_PORT:-13306}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-admin}
