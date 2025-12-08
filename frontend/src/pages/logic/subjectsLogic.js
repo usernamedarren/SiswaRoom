@@ -43,7 +43,7 @@ async function loadSubjects(category = null, search = null) {
 
     noSubjects.style.display = 'none';
     grid.innerHTML = subjects.map(subject => `
-      <div onclick="window.location.hash='#/subjects/${subject.subject_id}'" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;">
+      <div data-subject-id="${subject.subject_id}" class="subject-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;">
         <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">
           ${subject.name}
         </h3>
@@ -58,6 +58,14 @@ async function loadSubjects(category = null, search = null) {
         </div>
       </div>
     `).join('');
+
+    // Add click event listeners
+    grid.querySelectorAll('.subject-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const subjectId = card.dataset.subjectId;
+        window.location.hash = `#/subjects/${subjectId}`;
+      });
+    });
   } catch (err) {
     console.error('Error loading subjects:', err);
   }

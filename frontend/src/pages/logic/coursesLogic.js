@@ -35,7 +35,7 @@ async function loadCourses() {
 
     if (container) {
       container.innerHTML = courses.map(course => `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; color: white; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'">
+        <div class="course-card-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; color: white; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
           <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: 700;">
             ${course.course_name || course.title || 'Course'}
           </h3>
@@ -55,17 +55,34 @@ async function loadCourses() {
             </div>
           </div>
 
-          <button onclick="viewCourse('${course.course_id}')" style="width: 100%; background: white; color: #667eea; border: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+          <button data-course-id="${course.course_id}" class="view-course-btn" style="width: 100%; background: white; color: #667eea; border: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
             Lihat Detail
           </button>
         </div>
       `).join('');
+
+      // Add hover effects
+      container.querySelectorAll('.course-card-item').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-5px)';
+          card.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.6)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0)';
+          card.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+        });
+      });
+
+      // Add click event listeners
+      container.querySelectorAll('.view-course-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const courseId = btn.dataset.courseId;
+          window.location.hash = `#/course/${courseId}`;
+        });
+      });
     }
   } catch (err) {
     console.error('Error loading courses:', err);
   }
 }
-
-window.viewCourse = function(courseId) {
-  window.location.hash = `#/course/${courseId}`;
-};

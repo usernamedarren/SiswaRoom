@@ -49,7 +49,7 @@ async function loadMyCourses() {
     }
 
     container.innerHTML = courses.slice(0, 5).map(course => `
-      <div onclick="window.location.hash='#/subjects/${course.subject_id}'" style="padding: 1rem; background: #f8fafc; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 4px solid #7c3aed;">
+      <div data-course-id="${course.subject_id}" class="course-card" style="padding: 1rem; background: #f8fafc; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 4px solid #7c3aed;">
         <div>
           <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">${course.name}</div>
           <div style="font-size: 0.85rem; color: #64748b;">${course.teacher_name || 'Unknown'}</div>
@@ -57,6 +57,14 @@ async function loadMyCourses() {
         <div style="font-size: 1.2rem;">→</div>
       </div>
     `).join('');
+
+    // Add click event listeners
+    container.querySelectorAll('.course-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const courseId = card.dataset.courseId;
+        window.location.hash = `#/subjects/${courseId}`;
+      });
+    });
   } catch (err) {
     console.error('Error loading courses:', err);
   }

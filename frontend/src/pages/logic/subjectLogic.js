@@ -48,7 +48,7 @@ async function loadSubject(subjectId) {
 
     if (container) {
       container.innerHTML = topics.map(topic => `
-        <div onclick="viewTopic('${subjectId}', '${topic.topic_id}')" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+        <div data-subject-id="${subjectId}" data-topic-id="${topic.topic_id}" class="topic-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;">
           <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">
             ${topic.title}
           </h3>
@@ -57,12 +57,25 @@ async function loadSubject(subjectId) {
           </p>
         </div>
       `).join('');
+
+      // Add event listeners to topic cards
+      container.querySelectorAll('.topic-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const subId = card.dataset.subjectId;
+          const topicId = card.dataset.topicId;
+          window.location.hash = `#/materi/${subId}/${topicId}`;
+        });
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-4px)';
+          card.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0)';
+          card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+        });
+      });
     }
   } catch (err) {
     console.error('Error loading subject:', err);
   }
 }
-
-window.viewTopic = function(subjectId, topicId) {
-  window.location.hash = `#/materi/${subjectId}/${topicId}`;
-};

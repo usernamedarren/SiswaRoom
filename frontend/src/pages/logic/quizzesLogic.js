@@ -59,16 +59,20 @@ async function loadQuizzes() {
           </div>
         </div>
 
-        <button onclick="startQuiz('${quiz.quiz_id}')" style="width: 100%; background: #7c3aed; color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+        <button data-quiz-id="${quiz.quiz_id}" class="start-quiz-btn" style="width: 100%; background: #7c3aed; color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
           Mulai Quiz
         </button>
       </div>
     `).join('');
+
+    // Add event listeners to quiz buttons
+    container.querySelectorAll('.start-quiz-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const quizId = btn.dataset.quizId;
+        window.location.hash = `#/quiz/${quizId}`;
+      });
+    });
   } catch (err) {
     console.error('Error loading quizzes:', err);
   }
 }
-
-window.startQuiz = function(quizId) {
-  window.location.hash = `#/quiz/${quizId}`;
-};
