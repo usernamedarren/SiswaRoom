@@ -4,8 +4,8 @@ import { AuthService } from "../../utils/auth.js";
 // Demo credentials
 const DEMO_USERS = {
   admin: { email: 'admin@siswaroom.com', password: 'admin123', name: 'Admin SiswaRoom', role: 'admin' },
-  siswa: { email: 'siswa@siswaroom.com', password: 'siswa123', name: 'Siswa Demo', role: 'student' },
-  guru: { email: 'guru@siswaroom.com', password: 'guru123', name: 'Guru Demo', role: 'teacher' }
+  siswa: { email: 'student1@siswaroom.com', password: 'student123', name: 'Ahmad Rasyid', role: 'student' },
+  guru: { email: 'teacher1@siswaroom.com', password: 'teacher123', name: 'Ibu Siti Nurhaliza', role: 'teacher' }
 };
 
 export async function initLogin(container) {
@@ -28,31 +28,86 @@ function setupQuickLoginButtons() {
   const adminBtn = document.getElementById('quick-admin');
   const siswaBtn = document.getElementById('quick-siswa');
   const guruBtn = document.getElementById('quick-guru');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
 
   if (adminBtn) {
-    adminBtn.addEventListener('click', () => {
-      emailInput.value = DEMO_USERS.admin.email;
-      passwordInput.value = DEMO_USERS.admin.password;
-      document.getElementById('login-form')?.dispatchEvent(new Event('submit'));
+    adminBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      console.log('[QUICK LOGIN] Admin clicked');
+      await performLogin(DEMO_USERS.admin.email, DEMO_USERS.admin.password);
     });
   }
 
   if (siswaBtn) {
-    siswaBtn.addEventListener('click', () => {
-      emailInput.value = DEMO_USERS.siswa.email;
-      passwordInput.value = DEMO_USERS.siswa.password;
-      document.getElementById('login-form')?.dispatchEvent(new Event('submit'));
+    siswaBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      console.log('[QUICK LOGIN] Siswa clicked');
+      await performLogin(DEMO_USERS.siswa.email, DEMO_USERS.siswa.password);
     });
   }
 
   if (guruBtn) {
-    guruBtn.addEventListener('click', () => {
-      emailInput.value = DEMO_USERS.guru.email;
-      passwordInput.value = DEMO_USERS.guru.password;
-      document.getElementById('login-form')?.dispatchEvent(new Event('submit'));
+    guruBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      console.log('[QUICK LOGIN] Guru clicked');
+      await performLogin(DEMO_USERS.guru.email, DEMO_USERS.guru.password);
     });
+  }
+}
+
+async function performLogin(email, password) {
+  const submitBtn = document.getElementById('submit-btn');
+  const errorEl = document.getElementById('error-message');
+
+  if (!email || !password) {
+    if (errorEl) {
+      errorEl.textContent = 'Email dan password harus diisi';
+      errorEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (submitBtn) submitBtn.disabled = true;
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+
+  try {
+    console.log('[LOGIN] Attempting login to:', `${API_BASE}/auth/login`);
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    console.log('[LOGIN] Response:', res.status, data);
+
+    if (res.ok && data.token) {
+      // Save auth data
+      const user = data.user || { email, name: 'User' };
+      AuthService.setAuth(data.token, user);
+
+      console.log('[LOGIN] Success! Redirecting to dashboard...');
+      
+      // Redirect to dashboard
+      window.location.hash = '#/';
+    } else {
+      const errMsg = data.message || data.error || 'Login gagal';
+      if (errorEl) {
+        errorEl.textContent = errMsg;
+        errorEl.style.display = 'block';
+      }
+      console.error('[LOGIN] Failed:', errMsg);
+    }
+  } catch (err) {
+    console.error('[LOGIN] Network error:', err);
+    if (errorEl) {
+      errorEl.textContent = `Error: ${err.message}`;
+      errorEl.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -61,8 +116,6 @@ function setupLoginForm() {
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const rememberCheckbox = document.getElementById('remember-me');
-  const submitBtn = document.getElementById('submit-btn');
-  const errorEl = document.getElementById('error-message');
 
   if (form) {
     form.addEventListener('submit', async (e) => {
@@ -71,59 +124,14 @@ function setupLoginForm() {
       const email = emailInput?.value?.trim();
       const password = passwordInput?.value?.trim();
 
-      if (!email || !password) {
-        if (errorEl) {
-          errorEl.textContent = 'Email dan password harus diisi';
-          errorEl.style.display = 'block';
-        }
-        return;
+      // Save remember me preference
+      if (rememberCheckbox?.checked) {
+        localStorage.setItem('remembered-email', email);
+      } else {
+        localStorage.removeItem('remembered-email');
       }
 
-      if (submitBtn) submitBtn.disabled = true;
-      if (errorEl) {
-        errorEl.textContent = '';
-        errorEl.style.display = 'none';
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.token) {
-          // Save auth data
-          const user = data.user || { email, name: 'User' };
-          AuthService.setAuth(data.token, user);
-          
-          if (rememberCheckbox?.checked) {
-            localStorage.setItem('remembered-email', email);
-          } else {
-            localStorage.removeItem('remembered-email');
-          }
-
-          // Redirect to dashboard
-          setTimeout(() => {
-            window.location.hash = '#/dashboard';
-          }, 500);
-        } else {
-          if (errorEl) {
-            errorEl.textContent = data.message || 'Login gagal. Periksa email dan password Anda.';
-            errorEl.style.display = 'block';
-          }
-        }
-      } catch (err) {
-        console.error('Login error:', err);
-        if (errorEl) {
-          errorEl.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
-          errorEl.style.display = 'block';
-        }
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-      }
+      await performLogin(email, password);
     });
 
     // Load remembered email
