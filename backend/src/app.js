@@ -11,9 +11,19 @@ const app = express();
 // CORS Configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(",");
+    // Default allowed origins
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:4000",
+      "http://siswaroom.online",
+      "https://siswaroom.online",
+      "http://api.siswaroom.online",
+      "https://api.siswaroom.online",
+      "http://192.168.4.247:8088",
+      "http://192.168.4.247:4000"
+    ];
     
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl, or direct API calls)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -23,7 +33,7 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"]
 };
 
 // Middleware
