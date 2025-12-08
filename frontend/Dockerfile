@@ -9,8 +9,9 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build Vite app
-ARG VITE_API_URL=http://localhost:4000/api
+# Build Vite app with configurable API URL
+# Default to /api for production behind nginx proxy
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 

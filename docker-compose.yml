@@ -10,10 +10,10 @@ services:
     restart: always
     networks:
       - siswaroom-network
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     environment:
-      DB_HOST: ${DB_HOST:-192.168.4.247}
+      DB_HOST: ${DB_HOST:-127.0.0.1}
       DB_PORT: ${DB_PORT:-13306}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-admin}
@@ -21,32 +21,33 @@ services:
       JWT_SECRET: ${JWT_SECRET:-supersecretjwt}
       JWT_EXPIRE: ${JWT_EXPIRE:-7d}
       NODE_ENV: ${NODE_ENV:-production}
-      API_URL: ${API_URL:-http://192.168.4.247:4000}
+      API_URL: ${API_URL:-http://siswaroom.online}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api/subjects"]
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/integration/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
 
-  # Frontend Web Service
+  # Frontend Web Service (Nginx)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: siswaroom-frontend
     restart: always
     networks:
       - siswaroom-network
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - VITE_API_BASE=/api
+      - "${FRONTEND_HTTP_PORT:-8080}:80"
+      - "${FRONTEND_HTTPS_PORT:-8443}:443"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
