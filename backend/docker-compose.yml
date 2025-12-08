@@ -6,7 +6,7 @@ services:
     container_name: siswaroom-backend
     restart: always
     ports:
-      - "4001:4000"
+      - "4000:4000"
     environment:
       # Connect to existing MySQL in aPanel (port 13306 exposed from container 13306)
       DB_HOST: ${DB_HOST:-localhost}
@@ -17,7 +17,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-supersecretjwt}
       JWT_EXPIRE: ${JWT_EXPIRE:-7d}
       NODE_ENV: ${NODE_ENV:-development}
-      API_URL: ${API_URL:-http://192.168.4.247:4001}
+      API_URL: ${API_URL:-http://192.168.4.247:4000}
     volumes:
       - ./src:/app/src
       - ./node_modules:/app/node_modules
