@@ -7,28 +7,28 @@ services:
     restart: always
     networks:
       - siswaroom-network
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     environment:
-      # Connect to existing MySQL in aPanel (use 192.168.4.247 or check .env)
-      DB_HOST: ${DB_HOST:-192.168.4.247}
-      DB_PORT: ${DB_PORT:-13306}
+      DB_HOST: ${DB_HOST:-mysql_siswaroom-mysql_siswaroom-1}
+      DB_PORT: ${DB_PORT:-3306}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-admin}
       DB_NAME: ${DB_NAME:-siswaroom}
       JWT_SECRET: ${JWT_SECRET:-supersecretjwt}
       JWT_EXPIRE: ${JWT_EXPIRE:-7d}
       NODE_ENV: ${NODE_ENV:-production}
-      API_URL: ${API_URL:-http://192.168.4.247:4000}
+      API_URL: ${API_URL:-http://siswaroom.online}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api/subjects"]
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/integration/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
 volumes: {}
 
 networks:
   siswaroom-network:
-    driver: bridge
+    external: true
+    name: siswaroom-net
