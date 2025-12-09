@@ -1,22 +1,17 @@
 import db from "../config/db.js";
 
 export const QuizModel = {
-  // Get all quizzes for a subject
-  async getBySubject(subjectId) {
+  // Get all quizzes for a course (subject)
+  async getBySubject(courseId) {
     const [rows] = await db.query(`
       SELECT 
         q.*,
-        u.name as created_by_name,
-        COUNT(DISTINCT qq.question_id) as total_questions,
-        COUNT(DISTINCT qr.result_id) as times_taken
+        u.name as created_by_name
       FROM quizzes q
-      LEFT JOIN users u ON q.created_by = u.user_id
-      LEFT JOIN quiz_questions qq ON q.quiz_id = qq.quiz_id
-      LEFT JOIN quiz_results qr ON q.quiz_id = qr.quiz_id
-      WHERE q.subject_id = ?
-      GROUP BY q.quiz_id
+      LEFT JOIN users u ON q.created_by = u.id
+      WHERE q.course_id = ?
       ORDER BY q.created_at DESC
-    `, [subjectId]);
+    `, [courseId]);
     return rows;
   },
 
@@ -25,13 +20,10 @@ export const QuizModel = {
     const [rows] = await db.query(`
       SELECT 
         q.*,
-        u.name as created_by_name,
-        COUNT(DISTINCT qq.question_id) as total_questions
+        u.name as created_by_name
       FROM quizzes q
-      LEFT JOIN users u ON q.created_by = u.user_id
-      LEFT JOIN quiz_questions qq ON q.quiz_id = qq.quiz_id
-      WHERE q.quiz_id = ?
-      GROUP BY q.quiz_id
+      LEFT JOIN users u ON q.created_by = u.id
+      WHERE q.id = ?
     `, [id]);
     return rows[0] || null;
   },
@@ -42,11 +34,10 @@ export const QuizModel = {
     if (!quiz) return null;
 
     const [questions] = await db.query(`
-      SELECT q.*
-      FROM questions q
-      INNER JOIN quiz_questions qq ON q.question_id = qq.question_id
-      WHERE qq.quiz_id = ?
-      ORDER BY qq.question_order ASC
+      SELECT *
+      FROM questions
+      WHERE quiz_id = ?
+      ORDER BY id ASC
     `, [id]);
 
     return { ...quiz, questions };
@@ -54,46 +45,26 @@ export const QuizModel = {
 
   // Create quiz
   async create(data) {
-    const { title, description, subject_id, passing_score, time_limit, created_by } = data;
+    const { title, description, course_id, passing_score, duration, created_by } = data;
     const [result] = await db.query(
       `INSERT INTO quizzes 
-       (title, description, subject_id, passing_score, time_limit, created_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, description, subject_id, passing_score || 70, time_limit || 60, created_by]
+       (title, description, course_id, passing_score, duration, created_by, is_published)
+       VALUES (?, ?, ?, ?, ?, ?, 0)`,
+      [title, description, course_id, passing_score || 70, duration || 60, created_by]
     );
-    return { quiz_id: result.insertId, ...data };
+    return { id: result.insertId, ...data };
   },
 
   // Update quiz
   async update(id, data) {
-    const { title, description, passing_score, time_limit } = data;
+    const { title, description, passing_score, duration, is_published } = data;
     await db.query(
       `UPDATE quizzes 
-       SET title = ?, description = ?, passing_score = ?, time_limit = ?
-       WHERE quiz_id = ?`,
-      [title, description, passing_score, time_limit, id]
+       SET title = ?, description = ?, passing_score = ?, duration = ?, is_published = ?
+       WHERE id = ?`,
+      [title, description, passing_score, duration, is_published ? 1 : 0, id]
     );
     return this.getById(id);
-  },
-
-  // Add question to quiz
-  async addQuestion(quizId, questionId, order) {
-    await db.query(
-      `INSERT INTO quiz_questions (quiz_id, question_id, question_order)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE question_order = ?`,
-      [quizId, questionId, order, order]
-    );
-    return true;
-  },
-
-  // Remove question from quiz
-  async removeQuestion(quizId, questionId) {
-    await db.query(
-      `DELETE FROM quiz_questions WHERE quiz_id = ? AND question_id = ?`,
-      [quizId, questionId]
-    );
-    return true;
   },
 
   // Delete quiz

@@ -3,25 +3,23 @@ import db from "../config/db.js";
 // GET /api/quizzes - Get all quizzes
 export async function getQuizzes(req, res, next) {
   try {
-    const { subject_id } = req.query;
+    const { course_id } = req.query;
     let query = `
       SELECT 
         q.*,
-        s.name as subject_name,
-        COUNT(DISTINCT qq.question_id) as question_count
+        s.name as subject_name
       FROM quizzes q
-      LEFT JOIN subjects s ON q.subject_id = s.subject_id
-      LEFT JOIN quiz_questions qq ON q.quiz_id = qq.quiz_id
+      LEFT JOIN subjects s ON q.course_id = s.id
       WHERE 1=1
     `;
     const params = [];
 
-    if (subject_id) {
-      query += " AND q.subject_id = ?";
-      params.push(subject_id);
+    if (course_id) {
+      query += " AND q.course_id = ?";
+      params.push(course_id);
     }
 
-    query += " GROUP BY q.quiz_id ORDER BY q.quiz_id DESC";
+    query += " ORDER BY q.id DESC";
 
     const [rows] = await db.query(query, params);
     res.json(rows);
@@ -37,7 +35,7 @@ export async function getQuizDetail(req, res, next) {
 
     // Get quiz info
     const [quizzes] = await db.query(
-      "SELECT * FROM quizzes WHERE quiz_id = ?",
+      "SELECT * FROM quizzes WHERE id = ?",
       [id]
     );
 
@@ -47,11 +45,10 @@ export async function getQuizDetail(req, res, next) {
 
     // Get questions in quiz
     const [questions] = await db.query(
-      `SELECT q.question_id, q.question AS question_text, q.answer
-       FROM questions q
-       JOIN quiz_questions qq ON q.question_id = qq.question_id
-       WHERE qq.quiz_id = ?
-       ORDER BY qq.question_order ASC`,
+      `SELECT *
+       FROM questions
+       WHERE quiz_id = ?
+       ORDER BY id ASC`,
       [id]
     );
 

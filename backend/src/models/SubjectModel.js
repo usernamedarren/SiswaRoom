@@ -5,26 +5,20 @@ export const SubjectModel = {
   async getAll() {
     const [rows] = await db.query(`
       SELECT 
-        s.subject_id,
+        s.id,
         s.name,
         s.description,
-        s.category,
-        s.level,
-        s.thumbnail_url,
         s.teacher_id,
-        s.price,
-        s.max_students,
         u.name as teacher_name,
-        COUNT(DISTINCT cs.schedule_id) as enrolled_students,
-        COUNT(DISTINCT m.material_id) as material_count,
-        COUNT(DISTINCT q.quiz_id) as quiz_count
+        COUNT(DISTINCT uc.user_id) as enrolled_count,
+        COUNT(DISTINCT m.id) as material_count,
+        COUNT(DISTINCT q.id) as quiz_count
       FROM subjects s
-      LEFT JOIN users u ON s.teacher_id = u.user_id
-      LEFT JOIN class_schedule cs ON s.subject_id = cs.subject_id
-      LEFT JOIN class_students css ON cs.schedule_id = css.schedule_id
-      LEFT JOIN materials m ON s.subject_id = m.subject_id
-      LEFT JOIN quizzes q ON s.subject_id = q.subject_id
-      GROUP BY s.subject_id
+      LEFT JOIN users u ON s.teacher_id = u.id
+      LEFT JOIN user_courses uc ON s.id = uc.course_id
+      LEFT JOIN materials m ON s.id = m.course_id
+      LEFT JOIN quizzes q ON s.id = q.course_id
+      GROUP BY s.id
       ORDER BY s.name
     `);
     return rows;
@@ -37,17 +31,16 @@ export const SubjectModel = {
         s.*,
         u.name as teacher_name,
         u.email as teacher_email,
-        COUNT(DISTINCT css.user_id) as total_enrolled,
-        COUNT(DISTINCT m.material_id) as material_count,
-        COUNT(DISTINCT q.quiz_id) as quiz_count
+        COUNT(DISTINCT uc.user_id) as total_enrolled,
+        COUNT(DISTINCT m.id) as material_count,
+        COUNT(DISTINCT q.id) as quiz_count
       FROM subjects s
-      LEFT JOIN users u ON s.teacher_id = u.user_id
-      LEFT JOIN class_schedule cs ON s.subject_id = cs.subject_id
-      LEFT JOIN class_students css ON cs.schedule_id = css.schedule_id
-      LEFT JOIN materials m ON s.subject_id = m.subject_id
-      LEFT JOIN quizzes q ON s.subject_id = q.subject_id
-      WHERE s.subject_id = ?
-      GROUP BY s.subject_id
+      LEFT JOIN users u ON s.teacher_id = u.id
+      LEFT JOIN user_courses uc ON s.id = uc.course_id
+      LEFT JOIN materials m ON s.id = m.course_id
+      LEFT JOIN quizzes q ON s.id = q.course_id
+      WHERE s.id = ?
+      GROUP BY s.id
     `, [id]);
     return rows[0] || null;
   },
@@ -57,12 +50,11 @@ export const SubjectModel = {
     const [rows] = await db.query(`
       SELECT 
         s.*,
-        COUNT(DISTINCT css.user_id) as total_enrolled
+        COUNT(DISTINCT uc.user_id) as total_enrolled
       FROM subjects s
-      LEFT JOIN class_schedule cs ON s.subject_id = cs.subject_id
-      LEFT JOIN class_students css ON cs.schedule_id = css.schedule_id
+      LEFT JOIN user_courses uc ON s.id = uc.course_id
       WHERE s.teacher_id = ?
-      GROUP BY s.subject_id
+      GROUP BY s.id
       ORDER BY s.created_at DESC
     `, [teacherId]);
     return rows;
@@ -70,34 +62,40 @@ export const SubjectModel = {
 
   // Create new subject
   async create(data) {
-    const { name, description, category, level, teacher_id, price, max_students } = data;
+    const { name, description, teacher_id } = data;
     const [result] = await db.query(
-      `INSERT INTO subjects (name, description, category, level, teacher_id, price, max_students)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, description, category, level, teacher_id, price, max_students]
+      `INSERT INTO subjects (name, description, teacher_id)
+       VALUES (?, ?, ?)`,
+      [name, description, teacher_id]
     );
-    return { subject_id: result.insertId, ...data };
+    return { id: result.insertId, ...data };
   },
 
   // Update subject
   async update(id, data) {
-    const { name, description, category, level, price, max_students } = data;
+    const { name, description } = data;
     await db.query(
       `UPDATE subjects 
-       SET name = ?, description = ?, category = ?, level = ?, price = ?, max_students = ?
-       WHERE subject_id = ?`,
-      [name, description, category, level, price, max_students, id]
+       SET name = ?, description = ?
+       WHERE id = ?`,
+      [name, description, id]
     );
     return this.getById(id);
   },
 
-  // Get subjects by category
-  async getByCategory(category) {
+  // Delete subject
+  async delete(id) {
+    await db.query(`DELETE FROM subjects WHERE id = ?`, [id]);
+    return true;
+  },
+
+  // Get subject by name search
+  async search(keyword) {
     const [rows] = await db.query(`
       SELECT s.*, u.name as teacher_name
       FROM subjects s
-      LEFT JOIN users u ON s.teacher_id = u.user_id
-      WHERE s.category = ?
+      LEFT JOIN users u ON s.teacher_id = u.id
+      WHERE s.name LIKE ?
       ORDER BY s.name
     `, [category]);
     return rows;

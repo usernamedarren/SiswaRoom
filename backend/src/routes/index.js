@@ -7,7 +7,6 @@ import quizRoutes from "./quizRoutes.js";
 import scheduleRoutes from "./scheduleRoutes.js";
 import dashboardRoutes from "./dashboardRoutes.js";
 import courseRoutes from "./courseRoutes.js";
-import topicRoutes from "./topicRoutes.js";
 import userRoutes from "./userRoutes.js";
 import integrationRoutes from "./integrationRoutes.js";
 
@@ -21,7 +20,6 @@ router.use("/quizzes", quizRoutes);
 router.use("/schedules", scheduleRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/courses", courseRoutes);
-router.use("/topics", topicRoutes);
 router.use("/users", userRoutes);
 router.use("/integration", integrationRoutes);
 

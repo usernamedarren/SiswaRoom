@@ -1,6 +1,10 @@
 import { AuthService } from "../utils/auth.js";
 
 const getApiBase = () => {
+  // Allow build-time override if provided (works in Vite)
+  const envBase = import.meta?.env?.VITE_API_URL;
+  if (envBase) return envBase.replace(/\/$/, "");
+
   const host = window.location.hostname;
   const protocol = window.location.protocol;
 
@@ -15,8 +19,12 @@ const getApiBase = () => {
     return `http://${host}:4000/api`;
   }
 
-  // Production (via same domain with nginx proxy)
-  // Frontend + Backend share same domain/port (nginx proxies /api/ to backend:4000)
+  // Production: if hitting siswaroom.online, use dedicated API subdomain
+  if (host === "siswaroom.online") {
+    return "https://api.siswaroom.online/api";
+  }
+
+  // Default: same domain /api
   return `${protocol}//${host}/api`;
 };
 

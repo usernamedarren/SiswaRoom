@@ -2,10 +2,11 @@ import { API_BASE } from "../../config/api.js";
 import { AuthService } from "../../utils/auth.js";
 
 // Demo credentials
+// Demo users match seeded credentials in database (see README)
 const DEMO_USERS = {
-  admin: { email: 'admin@siswaroom.com', password: 'admin123', name: 'Admin SiswaRoom', role: 'admin' },
-  siswa: { email: 'student1@siswaroom.com', password: 'student123', name: 'Ahmad Rasyid', role: 'student' },
-  guru: { email: 'teacher1@siswaroom.com', password: 'teacher123', name: 'Ibu Siti Nurhaliza', role: 'teacher' }
+  admin: { email: 'admin@siswaroom.com', password: 'password123', name: 'Admin SiswaRoom', role: 'admin' },
+  siswa: { email: 'student1@siswaroom.com', password: 'password123', name: 'Ahmad Rasyid', role: 'student' },
+  guru: { email: 'teacher1@siswaroom.com', password: 'password123', name: 'Ibu Siti Nurhaliza', role: 'teacher' }
 };
 
 export async function initLogin(container) {
@@ -80,7 +81,8 @@ async function performLogin(email, password) {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await res.json() : { message: await res.text() };
     console.log('[LOGIN] Response:', res.status, data);
 
     if (res.ok && data.token) {

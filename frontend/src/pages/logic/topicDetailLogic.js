@@ -2,7 +2,7 @@ import { API_BASE } from "../../config/api.js";
 import { AuthService } from "../../utils/auth.js";
 
 // Load topic detail page static HTML
-export async function initTopicDetail(container, topicId) {
+export async function initTopicDetail(container, subjectId) {
   try {
     const response = await fetch(new URL('../static/topicDetail.html', import.meta.url).href);
     if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
@@ -10,44 +10,45 @@ export async function initTopicDetail(container, topicId) {
     container.innerHTML = html;
     
     // Initialize logic
-    loadTopicDetail(topicId);
+    loadSubjectDetail(subjectId);
   } catch (err) {
     console.error('[TOPICDETAIL] Failed to load HTML:', err);
-    container.innerHTML = '<p>Error loading topic detail. Please refresh.</p>';
+    container.innerHTML = '<p>Error loading subject detail. Please refresh.</p>';
   }
 }
 
-async function loadTopicDetail(topicId) {
+async function loadSubjectDetail(subjectId) {
   try {
-    // Load topic data
-    const topicRes = await fetch(`${API_BASE}/topics/${topicId}`, {
+    // Load subject data (since topics table doesn't exist in DB)
+    const subjectRes = await fetch(`${API_BASE}/subjects/${subjectId}`, {
       headers: AuthService.getAuthHeaders()
     });
-    const topic = await topicRes.json();
+    const subject = await subjectRes.json();
 
     const titleEl = document.getElementById('topic-title');
     const descEl = document.getElementById('topic-description');
     const materialsEl = document.getElementById('materials-container');
 
-    if (titleEl) titleEl.textContent = topic.title || 'Topik';
-    if (descEl) descEl.textContent = topic.description || 'Deskripsi topik tidak tersedia';
+    if (titleEl) titleEl.textContent = subject.name || 'Mata Pelajaran';
+    if (descEl) descEl.textContent = subject.description || 'Deskripsi tidak tersedia';
 
-    // Load materials for this topic
-    const matsRes = await fetch(`${API_BASE}/materials`, {
-      headers: AuthService.getAuthHeaders()
-    });
-    const materialsResponse = await matsRes.json();
-    const materials = materialsResponse.data || materialsResponse;
+    // Load materials for this subject
+    try {
+      const matsRes = await fetch(`${API_BASE}/materials?course_id=${subjectId}`, {
+        headers: AuthService.getAuthHeaders()
+      });
+      const materialsResponse = await matsRes.json();
+      const materials = Array.isArray(materialsResponse) ? materialsResponse : (materialsResponse.data || []);
 
-    if (!materials || materials.length === 0) {
-      if (materialsEl) {
-        materialsEl.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Tidak ada materi untuk topik ini</p>';
+      if (!materials || materials.length === 0) {
+        if (materialsEl) {
+          materialsEl.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Tidak ada materi untuk mata pelajaran ini</p>';
+        }
+        return;
       }
-      return;
-    }
 
-    if (materialsEl) {
-      materialsEl.innerHTML = materials.map(mat => renderMaterialCard(mat)).join('');
+      if (materialsEl) {
+        materialsEl.innerHTML = materials.map(mat => renderMaterialCard(mat)).join('');
     }
   } catch (err) {
     console.error('Error loading topic detail:', err);
