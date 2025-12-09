@@ -5,55 +5,61 @@ export const MaterialModel = {
   async getAll() {
     const [rows] = await db.query(`
       SELECT 
-        m.*,
-        u.name as created_by_name
+        m.*
       FROM materials m
-      LEFT JOIN users u ON m.created_by = u.user_id
       ORDER BY m.created_at DESC
     `);
+    return rows;
+  },
+
+  // Get materials by course
+  async getByCourse(courseId) {
+    const [rows] = await db.query(`
+      SELECT *
+      FROM materials
+      WHERE course_id = ?
+      ORDER BY created_at DESC
+    `, [courseId]);
     return rows;
   },
 
   // Get single material
   async getById(id) {
     const [rows] = await db.query(`
-      SELECT 
-        m.*,
-        u.name as created_by_name
-      FROM materials m
-      LEFT JOIN users u ON m.created_by = u.user_id
-      WHERE m.material_id = ?
+      SELECT *
+      FROM materials
+      WHERE id = ?
     `, [id]);
     return rows[0] || null;
   },
 
   // Create material
   async create(data) {
-    const { title, description, content, content_type, order, created_by } = data;
+    const { course_id, title, description, file_url, file_type } = data;
     const [result] = await db.query(
       `INSERT INTO materials 
-       (title, description, content, content_type, \`order\`, created_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, description, content, content_type, order || 1, created_by]
+       (course_id, title, description, file_url, file_type)
+       VALUES (?, ?, ?, ?, ?)`,
+      [course_id, title, description || null, file_url || null, file_type || null]
     );
-    return { material_id: result.insertId, ...data };
+    return { id: result.insertId, ...data };
   },
 
   // Update material
   async update(id, data) {
-    const { title, description, content, content_type, order } = data;
+    const { title, description, file_url, file_type } = data;
     await db.query(
       `UPDATE materials 
-       SET title = ?, description = ?, content = ?, content_type = ?, \`order\` = ?
-       WHERE material_id = ?`,
-      [title, description, content, content_type, order, id]
+       SET title = ?, description = ?, file_url = ?, file_type = ?
+       WHERE id = ?`,
+      [title, description, file_url, file_type, id]
     );
     return this.getById(id);
   },
 
   // Delete material
   async delete(id) {
-    await db.query("DELETE FROM materials WHERE material_id = ?", [id]);
+    await db.query("DELETE FROM materials WHERE id = ?", [id]);
     return true;
   }
 };

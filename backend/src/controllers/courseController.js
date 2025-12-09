@@ -4,8 +4,19 @@ import { UserCourseModel } from "../models/UserCourseModel.js";
 // GET /api/courses - Get user's enrolled courses
 export async function getUserCourses(req, res, next) {
   try {
-    const { user_id } = req.user;
-    const courses = await UserCourseModel.getUserCourses(user_id);
+    const { id: user_id } = req.user;
+    
+    const [courses] = await db.query(
+      `SELECT s.*, u.name as teacher_name
+       FROM subjects s
+       LEFT JOIN users u ON s.teacher_id = u.id
+       WHERE s.id IN (
+         SELECT course_id FROM user_courses WHERE user_id = ? AND status = 'active'
+       )
+       ORDER BY s.name ASC`,
+      [user_id]
+    );
+    
     res.json(courses);
   } catch (err) {
     next(err);
@@ -15,36 +26,30 @@ export async function getUserCourses(req, res, next) {
 // GET /api/courses/available - Get available courses for enrollment
 export async function getAvailableCourses(req, res, next) {
   try {
-    const { user_id } = req.user;
-    const { search = "", category = "" } = req.query;
+    const { id: user_id } = req.user;
+    const { search = "" } = req.query;
 
     let query = `
       SELECT s.*, 
              u.name as teacher_name,
-             0 as is_enrolled,
-             COUNT(DISTINCT m.material_id) as total_materials,
-             COUNT(DISTINCT q.quiz_id) as total_quizzes
+             COUNT(DISTINCT m.id) as total_materials,
+             COUNT(DISTINCT q.id) as total_quizzes,
+             (CASE WHEN uc.user_id IS NOT NULL THEN 1 ELSE 0 END) as is_enrolled
       FROM subjects s
-      LEFT JOIN users u ON s.teacher_id = u.user_id
-      LEFT JOIN materials m ON s.subject_id = m.subject_id
-      LEFT JOIN quizzes q ON s.subject_id = q.subject_id
-      WHERE s.subject_id NOT IN (
-        SELECT subject_id FROM user_courses WHERE user_id = ?
-      )
+      LEFT JOIN users u ON s.teacher_id = u.id
+      LEFT JOIN materials m ON s.id = m.course_id
+      LEFT JOIN quizzes q ON s.id = q.course_id
+      LEFT JOIN user_courses uc ON s.id = uc.course_id AND uc.user_id = ?
+      WHERE 1=1
     `;
     const params = [user_id];
 
     if (search) {
-      query += ` AND (s.name LIKE ? OR s.description LIKE ?)`;
-      params.push(`%${search}%`, `%${search}%`);
+      query += ` AND s.name LIKE ?`;
+      params.push(`%${search}%`);
     }
 
-    if (category && category !== "all") {
-      query += ` AND s.category = ?`;
-      params.push(category);
-    }
-
-    query += ` GROUP BY s.subject_id ORDER BY s.created_at DESC`;
+    query += ` GROUP BY s.id ORDER BY s.name ASC`;
 
     const [courses] = await db.query(query, params);
     res.json(courses);
@@ -56,32 +61,35 @@ export async function getAvailableCourses(req, res, next) {
 // POST /api/courses/:id/enroll - Enroll user in course
 export async function enrollCourse(req, res, next) {
   try {
-    const { id: subjectId } = req.params;
-    const { user_id } = req.user;
+    const { id: courseId } = req.params;
+    const { id: user_id } = req.user;
 
     // Check if course exists
-    const [courses] = await db.query(
-      "SELECT subject_id FROM subjects WHERE subject_id = ?",
-      [subjectId]
-    );
+    const [courses] = await db.query("SELECT id FROM subjects WHERE id = ?", [courseId]);
 
     if (!courses[0]) {
-      return res.status(404).json({ message: "Kursus tidak ditemukan" });
+      return res.status(404).json({ message: "Mata pelajaran tidak ditemukan" });
     }
 
     // Check if already enrolled
-    const isEnrolled = await UserCourseModel.isEnrolled(user_id, subjectId);
-    if (isEnrolled) {
-      return res.status(400).json({ message: "Anda sudah terdaftar di kursus ini" });
+    const [enrolled] = await db.query(
+      "SELECT id FROM user_courses WHERE user_id = ? AND course_id = ?",
+      [user_id, courseId]
+    );
+
+    if (enrolled[0]) {
+      return res.status(400).json({ message: "Anda sudah terdaftar di mata pelajaran ini" });
     }
 
     // Enroll user
-    await UserCourseModel.enrollCourse(user_id, subjectId);
+    await db.query(
+      "INSERT INTO user_courses (user_id, course_id, status) VALUES (?, ?, 'active')",
+      [user_id, courseId]
+    );
 
     res.status(201).json({
       success: true,
-      message: "Berhasil mendaftar kursus",
-      subject_id: subjectId
+      message: "Berhasil mendaftar mata pelajaran"
     });
   } catch (err) {
     next(err);
@@ -91,13 +99,26 @@ export async function enrollCourse(req, res, next) {
 // DELETE /api/courses/:id/unenroll - Unenroll from course
 export async function unenrollCourse(req, res, next) {
   try {
-    const { id: subjectId } = req.params;
-    const { user_id } = req.user;
+    const { id: courseId } = req.params;
+    const { id: user_id } = req.user;
 
-    // Check if enrolled
-    const isEnrolled = await UserCourseModel.isEnrolled(user_id, subjectId);
-    if (!isEnrolled) {
-      return res.status(400).json({ message: "Anda tidak terdaftar di kursus ini" });
+    const [result] = await db.query(
+      "DELETE FROM user_courses WHERE user_id = ? AND course_id = ?",
+      [user_id, courseId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: "Anda tidak terdaftar di mata pelajaran ini" });
+    }
+
+    res.json({
+      success: true,
+      message: "Berhasil batal dari mata pelajaran"
+    });
+  } catch (err) {
+    next(err);
+  }
+}
     }
 
     // Unenroll

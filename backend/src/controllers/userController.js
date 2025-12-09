@@ -13,8 +13,8 @@ export async function getUsers(req, res, next) {
 // Get user by ID
 export async function getUserById(req, res, next) {
   try {
-    const { userId } = req.params;
-    const user = await UserModel.getById(userId);
+    const { id } = req.params;
+    const user = await UserModel.getById(id);
     
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan" });
@@ -30,7 +30,10 @@ export async function getUserById(req, res, next) {
 export async function getUsersByRole(req, res, next) {
   try {
     const { role } = req.params;
-    const users = await UserModel.getAll({ role });
+    const [users] = await db.query(
+      "SELECT * FROM users WHERE role = ? ORDER BY name ASC",
+      [role]
+    );
     res.json(users);
   } catch (err) {
     next(err);
@@ -40,10 +43,10 @@ export async function getUsersByRole(req, res, next) {
 // Update user
 export async function updateUser(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { id } = req.params;
     const { name, email, role } = req.body;
     
-    const result = await UserModel.update(userId, { name, email, role });
+    const result = await UserModel.update(id, { name, email, role });
     
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "User tidak ditemukan" });
@@ -58,9 +61,9 @@ export async function updateUser(req, res, next) {
 // Delete user
 export async function deleteUser(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { id } = req.params;
     
-    const result = await UserModel.delete(userId);
+    const result = await UserModel.delete(id);
     
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "User tidak ditemukan" });

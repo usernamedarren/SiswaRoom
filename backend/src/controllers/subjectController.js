@@ -51,11 +51,10 @@ export async function getSubjectMaterials(req, res, next) {
   }
 }
 
-// GET /api/subjects/category/:category - Get subjects by category
-export async function getSubjectsByCategory(req, res, next) {
+// GET /api/subjects - Get all subjects
+export async function getSubjects(req, res, next) {
   try {
-    const { category } = req.params;
-    const subjects = await SubjectModel.getByCategory(category);
+    const subjects = await SubjectModel.getAll();
     res.json({
       success: true,
       data: subjects
@@ -64,39 +63,40 @@ export async function getSubjectsByCategory(req, res, next) {
     next(err);
   }
 }
-
-// GET /api/categories - Get all categories
-export async function getCategories(req, res, next) {
+export async function createSubject(req, res, next) {
   try {
-    const categories = await SubjectModel.getCategories();
-    res.json({
+    const { name, description } = req.body;
+    const teacher_id = req.user.id;
+
+    if (req.user.role === "student") {
+      return res.status(403).json({
+        success: false,
+        message: "Anda tidak memiliki akses untuk membuat mata pelajaran"
+      });
+    }
+
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Nama mata pelajaran wajib diisi"
+      });
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO subjects (name, description, teacher_id)
+       VALUES (?, ?, ?)`,
+      [name, description || null, teacher_id]
+    );
+
+    res.status(201).json({
       success: true,
-      data: categories
+      message: "Mata pelajaran berhasil dibuat",
+      data: { id: result.insertId, name, description, teacher_id }
     });
   } catch (err) {
     next(err);
   }
 }
-
-// POST /api/subjects (Teacher/Admin only)
-export async function createSubject(req, res, next) {
-  try {
-    const { name, description, category, level, price, max_students } = req.body;
-    const teacher_id = req.user.user_id;
-
-    if (req.user.role === "student") {
-      return res.status(403).json({
-        success: false,
-        message: "Anda tidak memiliki akses untuk membuat kursus"
-      });
-    }
-
-    if (!name || !category) {
-      return res.status(400).json({
-        success: false,
-        message: "Nama dan kategori wajib diisi"
-      });
-    }
 
     const subject = await SubjectModel.create({
       name,

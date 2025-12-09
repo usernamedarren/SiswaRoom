@@ -97,15 +97,7 @@ export const SubjectModel = {
       LEFT JOIN users u ON s.teacher_id = u.id
       WHERE s.name LIKE ?
       ORDER BY s.name
-    `, [category]);
+    `, [`%${keyword}%`]);
     return rows;
-  },
-
-  // Get all categories
-  async getCategories() {
-    const [rows] = await db.query(
-      `SELECT DISTINCT category FROM subjects ORDER BY category`
-    );
-    return rows.map(r => r.category);
   }
 };
