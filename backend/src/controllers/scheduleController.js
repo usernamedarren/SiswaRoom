@@ -126,37 +126,3 @@ export async function deleteSchedule(req, res, next) {
     next(err);
   }
 }
-    schedule.students = students;
-
-    res.json({ success: true, data: schedule });
-  } catch (err) {
-    next(err);
-  }
-}
-
-// GET /api/calendar - Get calendar view of schedules
-export async function getCalendar(req, res, next) {
-  try {
-    const { user_id } = req.user;
-    const { month, year } = req.query;
-
-    const targetMonth = month || new Date().getMonth() + 1;
-    const targetYear = year || new Date().getFullYear();
-
-    const [rows] = await db.query(
-      `SELECT s.schedule_date, COUNT(*) as total_classes
-       FROM class_schedule s
-       WHERE s.schedule_id IN (
-         SELECT DISTINCT schedule_id FROM class_students WHERE user_id = ?
-       )
-       AND MONTH(s.schedule_date) = ? AND YEAR(s.schedule_date) = ?
-       GROUP BY s.schedule_date
-       ORDER BY s.schedule_date ASC`,
-      [user_id, targetMonth, targetYear]
-    );
-
-    res.json({ success: true, data: rows });
-  } catch (err) {
-    next(err);
-  }
-}

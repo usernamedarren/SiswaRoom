@@ -16,7 +16,7 @@ export async function register(req, res, next) {
 
     // Check if email already exists
     const [existing] = await db.query(
-      "SELECT user_id FROM users WHERE email = ?",
+      "SELECT id FROM users WHERE email = ?",
       [email]
     );
 
@@ -36,7 +36,7 @@ export async function register(req, res, next) {
     );
 
     const user = {
-      user_id: result.insertId,
+      id: result.insertId,
       name,
       email,
       role
@@ -86,7 +86,7 @@ export async function login(req, res, next) {
       message: "Login berhasil",
       token,
       user: {
-        user_id: user.user_id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role
@@ -101,8 +101,8 @@ export async function login(req, res, next) {
 export async function me(req, res, next) {
   try {
     const [rows] = await db.query(
-      "SELECT user_id, name, email, role, created_at FROM users WHERE user_id = ?",
-      [req.user.user_id]
+      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
+      [req.user.id]
     );
     
     if (!rows[0]) {

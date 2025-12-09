@@ -65,11 +65,11 @@ export async function getQuizDetail(req, res, next) {
 export async function startQuiz(req, res, next) {
   try {
     const { id } = req.params;
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     // Validate quiz exists
     const [quizzes] = await db.query(
-      "SELECT quiz_id FROM quizzes WHERE quiz_id = ?",
+      "SELECT id FROM quizzes WHERE id = ?",
       [id]
     );
 
@@ -100,7 +100,7 @@ export async function submitQuiz(req, res, next) {
   try {
     const { result_id } = req.params;
     const { answers } = req.body; // Array of {question_id, selected_option or selected_answer}
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     // Validate result exists
     const [results] = await db.query(
@@ -121,7 +121,7 @@ export async function submitQuiz(req, res, next) {
       const selected = answer.selected_option ?? answer.selected_answer;
 
       const [questions] = await db.query(
-        "SELECT answer FROM questions WHERE question_id = ?",
+        "SELECT answer FROM questions WHERE id = ?",
         [answer.question_id]
       );
 
@@ -137,7 +137,7 @@ export async function submitQuiz(req, res, next) {
     // Update quiz result
     // Determine passing based on quiz's passing_score
     const [[quizInfo]] = await db.query(
-      "SELECT passing_score FROM quizzes WHERE quiz_id = ?",
+      "SELECT passing_score FROM quizzes WHERE id = ?",
       [results[0].quiz_id]
     );
     const passed = quizInfo ? scorePercentage >= (quizInfo.passing_score || 0) : 0;
@@ -165,16 +165,16 @@ export async function submitQuiz(req, res, next) {
 // GET /api/quiz-results - Get user's quiz results
 export async function getUserQuizResults(req, res, next) {
   try {
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     const [results] = await db.query(
-            `SELECT qr.result_id, qr.quiz_id, qr.score, qr.completed_at,
+      `SELECT qr.result_id, qr.quiz_id, qr.score, qr.completed_at,
               q.title as quiz_title, s.name as subject_name
        FROM quiz_results qr
-       JOIN quizzes q ON qr.quiz_id = q.quiz_id
-       JOIN subjects s ON q.subject_id = s.subject_id
+       JOIN quizzes q ON qr.quiz_id = q.id
+       JOIN subjects s ON q.course_id = s.id
        WHERE qr.user_id = ?
-             ORDER BY qr.completed_at DESC`,
+       ORDER BY qr.completed_at DESC`,
       [user_id]
     );
 
@@ -188,14 +188,14 @@ export async function getUserQuizResults(req, res, next) {
 export async function getQuizResult(req, res, next) {
   try {
     const { result_id } = req.params;
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     // Get result
     const [results] = await db.query(
       `SELECT qr.*, q.title AS quiz_title, s.name AS subject_name
        FROM quiz_results qr
-       JOIN quizzes q ON qr.quiz_id = q.quiz_id
-       JOIN subjects s ON q.subject_id = s.subject_id
+       JOIN quizzes q ON qr.quiz_id = q.id
+       JOIN subjects s ON q.course_id = s.id
        WHERE qr.result_id = ? AND qr.user_id = ?`,
       [result_id, user_id]
     );
