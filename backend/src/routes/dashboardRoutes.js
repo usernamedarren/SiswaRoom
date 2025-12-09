@@ -3,7 +3,6 @@ import { protect } from "../middlewares/authMiddleware.js";
 import {
   getDashboardSummary,
   getUserStats,
-  getUpcomingClasses,
   getLatestQuizResults,
   getProgress
 } from "../controllers/dashboardController.js";
@@ -16,7 +15,6 @@ router.get("/summary", getDashboardSummary);
 // Protected routes
 router.use(protect);
 router.get("/user-stats", getUserStats);
-router.get("/classes", getUpcomingClasses);
 router.get("/quiz-results", getLatestQuizResults);
 router.get("/progress", getProgress);
 // Alias for frontend expectation
