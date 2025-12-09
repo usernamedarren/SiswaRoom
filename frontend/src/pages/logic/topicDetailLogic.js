@@ -49,9 +49,15 @@ async function loadSubjectDetail(subjectId) {
 
       if (materialsEl) {
         materialsEl.innerHTML = materials.map(mat => renderMaterialCard(mat)).join('');
+      }
+    } catch (matsErr) {
+      console.error('Error loading materials:', matsErr);
+      if (materialsEl) {
+        materialsEl.innerHTML = '<p style="color: #ef4444;">Gagal memuat materi</p>';
+      }
     }
   } catch (err) {
-    console.error('Error loading topic detail:', err);
+    console.error('Error loading subject detail:', err);
   }
 }
 
