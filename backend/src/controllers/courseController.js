@@ -119,32 +119,19 @@ export async function unenrollCourse(req, res, next) {
     next(err);
   }
 }
-    }
-
-    // Unenroll
-    await UserCourseModel.unenrollCourse(user_id, subjectId);
-
-    res.json({
-      success: true,
-      message: "Berhasil keluar dari kursus"
-    });
-  } catch (err) {
-    next(err);
-  }
-}
 
 // GET /api/courses/:id - Get course details
 export async function getCourseDetail(req, res, next) {
   try {
     const { id: subjectId } = req.params;
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     // Get course info
     const [courses] = await db.query(
       `SELECT s.*, u.name as teacher_name, u.email as teacher_email
        FROM subjects s
-       LEFT JOIN users u ON s.teacher_id = u.user_id
-       WHERE s.subject_id = ?`,
+       LEFT JOIN users u ON s.teacher_id = u.id
+       WHERE s.id = ?`,
       [subjectId]
     );
 
@@ -164,18 +151,18 @@ export async function getCourseDetail(req, res, next) {
     // Get materials if enrolled
     if (course.is_enrolled) {
       const [materials] = await db.query(
-        `SELECT * FROM materials WHERE subject_id = ? ORDER BY \`order\` ASC`,
+        `SELECT * FROM materials WHERE course_id = ? ORDER BY id ASC`,
         [subjectId]
       );
       course.materials = materials;
 
-      // Get quizzes
+      // Get quizzes with question count
       const [quizzes] = await db.query(
-        `SELECT q.*, COUNT(DISTINCT qq.question_id) as question_count
+        `SELECT q.*, COUNT(DISTINCT qs.id) as question_count
          FROM quizzes q
-         LEFT JOIN quiz_questions qq ON q.quiz_id = qq.quiz_id
-         WHERE q.subject_id = ?
-         GROUP BY q.quiz_id`,
+         LEFT JOIN questions qs ON q.id = qs.quiz_id
+         WHERE q.course_id = ?
+         GROUP BY q.id`,
         [subjectId]
       );
       course.quizzes = quizzes;
@@ -191,7 +178,7 @@ export async function getCourseDetail(req, res, next) {
 export async function getCourseSchedules(req, res, next) {
   try {
     const { id: subjectId } = req.params;
-    const { user_id } = req.user;
+    const user_id = req.user.id;
 
     // Check if user is enrolled
     const isEnrolled = await UserCourseModel.isEnrolled(user_id, subjectId);
@@ -200,15 +187,13 @@ export async function getCourseSchedules(req, res, next) {
     }
 
     const [schedules] = await db.query(
-      `SELECT cs.*, 
-              u.name as teacher_name,
-              (SELECT COUNT(*) FROM class_students WHERE schedule_id = cs.schedule_id) as total_students,
-              (SELECT COUNT(*) FROM class_students WHERE schedule_id = cs.schedule_id AND user_id = ?) as is_joined
-       FROM class_schedule cs
-       LEFT JOIN users u ON cs.teacher_id = u.user_id
-       WHERE cs.subject_id = ?
-       ORDER BY cs.class_date ASC, cs.start_time ASC`,
-      [user_id, subjectId]
+      `SELECT s.*, 
+              u.name as teacher_name
+       FROM schedules s
+       LEFT JOIN users u ON s.teacher_id = u.id
+       WHERE s.subject_id = ?
+       ORDER BY FIELD(s.day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), s.start_time ASC`,
+      [subjectId]
     );
 
     res.json(schedules);

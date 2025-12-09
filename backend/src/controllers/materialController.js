@@ -124,24 +124,3 @@ export async function deleteMaterial(req, res, next) {
     next(err);
   }
 }
-  try {
-    const { id } = req.params;
-    const material = await MaterialModel.getById(id);
-    
-    if (!material) {
-      return res.status(404).json({
-        success: false,
-        message: "Materi tidak ditemukan"
-      });
-    }
-
-    await MaterialModel.delete(id);
-
-    res.json({
-      success: true,
-      message: "Materi berhasil dihapus"
-    });
-  } catch (err) {
-    next(err);
-  }
-}
