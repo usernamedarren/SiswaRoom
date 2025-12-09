@@ -130,14 +130,21 @@ async function loadSubjectsTable() {
                 <td style="padding: 1rem; color: #1e293b;">${s.subject_name || s.name || 'N/A'}</td>
                 <td style="padding: 1rem; color: #64748b;">${s.description || '-'}</td>
                 <td style="padding: 1rem; text-align: center;">
-                  <button onclick="editSubject('${s.subject_id}')" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
-                  <button onclick="deleteSubject('${s.subject_id}')" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
+                  <button data-action="edit-subject" data-id="${s.subject_id}" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
+                  <button data-action="delete-subject" data-id="${s.subject_id}" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
                 </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+
+      container.querySelectorAll('button[data-action="edit-subject"]').forEach(btn => {
+        btn.addEventListener('click', () => alert('Edit subject #' + btn.dataset.id));
+      });
+      container.querySelectorAll('button[data-action="delete-subject"]').forEach(btn => {
+        btn.addEventListener('click', () => deleteItem('subject', btn.dataset.id));
+      });
     }
   } catch (err) {
     console.error('Error loading subjects:', err);
@@ -175,14 +182,21 @@ async function loadMaterialsTable() {
                 <td style="padding: 1rem; color: #64748b;">${m.content_type || '-'}</td>
                 <td style="padding: 1rem; color: #64748b;">${m.topic_id || '-'}</td>
                 <td style="padding: 1rem; text-align: center;">
-                  <button onclick="editMaterial('${m.material_id}')" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
-                  <button onclick="deleteMaterial('${m.material_id}')" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
+                  <button data-action="edit-material" data-id="${m.material_id}" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
+                  <button data-action="delete-material" data-id="${m.material_id}" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
                 </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+
+      container.querySelectorAll('button[data-action="edit-material"]').forEach(btn => {
+        btn.addEventListener('click', () => alert('Edit material #' + btn.dataset.id));
+      });
+      container.querySelectorAll('button[data-action="delete-material"]').forEach(btn => {
+        btn.addEventListener('click', () => deleteItem('material', btn.dataset.id));
+      });
     }
   } catch (err) {
     console.error('Error loading materials:', err);
@@ -218,14 +232,21 @@ async function loadQuestionsTable() {
                 <td style="padding: 1rem; color: #1e293b;">${q.question || 'N/A'}</td>
                 <td style="padding: 1rem; color: #64748b;">${q.quiz_id || '-'}</td>
                 <td style="padding: 1rem; text-align: center;">
-                  <button onclick="editQuestion('${q.question_id}')" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
-                  <button onclick="deleteQuestion('${q.question_id}')" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
+                  <button data-action="edit-question" data-id="${q.question_id}" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
+                  <button data-action="delete-question" data-id="${q.question_id}" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
                 </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+
+      container.querySelectorAll('button[data-action="edit-question"]').forEach(btn => {
+        btn.addEventListener('click', () => alert('Edit question #' + btn.dataset.id));
+      });
+      container.querySelectorAll('button[data-action="delete-question"]').forEach(btn => {
+        btn.addEventListener('click', () => deleteItem('question', btn.dataset.id));
+      });
     }
   } catch (err) {
     console.error('Error loading questions:', err);
@@ -263,14 +284,21 @@ async function loadQuizzesTable() {
                 <td style="padding: 1rem; color: #64748b;">${q.time_limit || '-'}</td>
                 <td style="padding: 1rem; color: #64748b;">${q.passing_score || '-'}%</td>
                 <td style="padding: 1rem; text-align: center;">
-                  <button onclick="editQuiz('${q.quiz_id}')" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
-                  <button onclick="deleteQuiz('${q.quiz_id}')" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
+                  <button data-action="edit-quiz" data-id="${q.quiz_id}" style="background: #0ea5e9; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
+                  <button data-action="delete-quiz" data-id="${q.quiz_id}" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Hapus</button>
                 </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+
+      container.querySelectorAll('button[data-action="edit-quiz"]').forEach(btn => {
+        btn.addEventListener('click', () => alert('Edit quiz #' + btn.dataset.id));
+      });
+      container.querySelectorAll('button[data-action="delete-quiz"]').forEach(btn => {
+        btn.addEventListener('click', () => deleteItem('quiz', btn.dataset.id));
+      });
     }
   } catch (err) {
     console.error('Error loading quizzes:', err);
@@ -330,3 +358,9 @@ window.deleteItem = async function(type, id) {
     }
   }
 };
+
+// Expose no-op edit for now (to avoid reference errors)
+window.editSubject = (id) => alert('Edit subject #' + id);
+window.editMaterial = (id) => alert('Edit material #' + id);
+window.editQuestion = (id) => alert('Edit question #' + id);
+window.editQuiz = (id) => alert('Edit quiz #' + id);
