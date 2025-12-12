@@ -4,60 +4,113 @@ import { AuthService } from "../../utils/auth.js";
 // Load schedules page static HTML
 export async function initSchedules(container) {
   try {
-    const response = await fetch(new URL('../static/schedules.html', import.meta.url).href);
+    const response = await fetch(
+      new URL("../static/schedules.html", import.meta.url).href
+    );
     if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
+
     const html = await response.text();
     container.innerHTML = html;
-    
-    // Initialize logic
+
     loadSchedules();
   } catch (err) {
-    console.error('[SCHEDULES] Failed to load HTML:', err);
-    container.innerHTML = '<p>Error loading schedules page. Please refresh.</p>';
+    console.error("[SCHEDULES] Failed to load HTML:", err);
+    container.innerHTML =
+      "<p class='center text-gray'>Error loading schedules page. Silakan refresh.</p>";
   }
 }
 
 async function loadSchedules() {
   try {
     const res = await fetch(`${API_BASE}/schedules`, {
-      headers: AuthService.getAuthHeaders()
+      headers: AuthService.getAuthHeaders(),
     });
+
     const result = await res.json();
     const schedules = result.data || result;
-    const container = document.getElementById('schedules-container');
-    const noSchedules = document.getElementById('no-schedules');
+
+    const listContainer = document.getElementById("schedules-container");
+    const noSchedules = document.getElementById("no-schedules");
+    const calendarView = document.getElementById("calendar-view");
 
     if (!schedules || schedules.length === 0) {
-      container.innerHTML = '';
-      noSchedules.style.display = 'block';
+      if (listContainer) listContainer.innerHTML = "";
+      if (calendarView)
+        calendarView.innerHTML =
+          "<p class='center text-gray' style='grid-column:1/-1;'>Tidak ada jadwal</p>";
+      if (noSchedules) noSchedules.style.display = "block";
       return;
     }
 
-    noSchedules.style.display = 'none';
-    container.innerHTML = schedules.map(schedule => {
-      const dateVal = schedule.schedule_date || schedule.class_date;
-      const timeVal = schedule.schedule_time || schedule.start_time;
-      return `
-        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-              <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">
-                ${schedule.subject_name || 'Class'}
-              </h3>
-              <p style="color: #64748b; font-size: 0.95rem; margin: 0;">
-                Pengajar: ${schedule.teacher_name || 'Unknown'}
-              </p>
-            </div>
-            <span style="background: #ddd6fe; color: #7c3aed; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; text-align: center;">
-              📅 ${dateVal ? new Date(dateVal).toLocaleDateString('id-ID') : 'N/A'}
-              <br>
-              ⏰ ${timeVal ? String(timeVal).substring(0, 5) : 'N/A'}
-            </span>
-          </div>
-        </div>
-      `;
-    }).join('');
+    if (noSchedules) noSchedules.style.display = "none";
+
+    if (listContainer) {
+      listContainer.innerHTML = schedules.map(renderScheduleItem).join("");
+    }
+
+    if (calendarView) {
+      calendarView.innerHTML = schedules.map(renderCalendarCell).join("");
+    }
   } catch (err) {
-    console.error('Error loading schedules:', err);
+    console.error("[SCHEDULES] Error loading schedules:", err);
   }
+}
+
+function renderScheduleItem(schedule) {
+  const dateVal = schedule.schedule_date || schedule.class_date;
+  const timeVal = schedule.schedule_time || schedule.start_time;
+
+  const dateText = dateVal
+    ? new Date(dateVal).toLocaleDateString("id-ID")
+    : "N/A";
+  const timeText = timeVal ? String(timeVal).substring(0, 5) : "N/A";
+
+  const subject = schedule.subject_name || "Class";
+  const teacher = schedule.teacher_name || "Unknown";
+
+  return `
+    <div class="schedule-item fade-in-up">
+      <div class="schedule-info">
+        <h4>${subject}</h4>
+        <p>Pengajar: ${teacher}</p>
+      </div>
+      <div class="schedule-time">
+        📅 ${dateText}<br/>
+        ⏰ ${timeText}
+      </div>
+    </div>
+  `;
+}
+
+function renderCalendarCell(schedule) {
+  const dateVal = schedule.schedule_date || schedule.class_date;
+  const timeVal = schedule.schedule_time || schedule.start_time;
+
+  if (!dateVal) {
+    return `
+      <div class="calendar-cell">
+        <div class="calendar-date">Tanggal tidak diketahui</div>
+      </div>
+    `;
+  }
+
+  const d = new Date(dateVal);
+  const dateText = d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+  });
+
+  const timeText = timeVal ? String(timeVal).substring(0, 5) : "N/A";
+  const subject = schedule.subject_name || "Class";
+  const teacher = schedule.teacher_name || "Unknown";
+
+  return `
+    <div class="calendar-cell fade-in-up">
+      <div class="calendar-date">${dateText} • ${timeText}</div>
+      <div class="calendar-lesson">
+        ${subject}
+        <span>Pengajar: ${teacher}</span>
+      </div>
+    </div>
+  `;
 }

@@ -2,99 +2,69 @@ import { API_BASE } from "../../config/api.js";
 
 export async function initRegister(container) {
   try {
-    const response = await fetch(new URL('../static/register.html', import.meta.url).href);
-    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
-    const html = await response.text();
+    const html = await (await fetch(new URL("../static/register.html", import.meta.url))).text();
     container.innerHTML = html;
-    
+
     setupRegisterForm();
-  } catch (err) {
-    console.error('[REGISTER] Failed to load HTML:', err);
-    container.innerHTML = '<p>Error loading register page. Please refresh.</p>';
+
+  } catch {
+    container.innerHTML = `<p class="center text-gray">Gagal memuat halaman pendaftaran.</p>`;
   }
 }
 
 function setupRegisterForm() {
-  const form = document.getElementById('register-form');
-  const nameInput = document.getElementById('name');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const confirmInput = document.getElementById('confirm-password');
-  const roleSelect = document.getElementById('role');
-  const submitBtn = document.getElementById('submit-btn');
-  const errorEl = document.getElementById('error-message');
-  const successEl = document.getElementById('success-message');
+  const form = document.getElementById("register-form");
 
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const name = nameInput?.value?.trim();
-      const email = emailInput?.value?.trim();
-      const password = passwordInput?.value?.trim();
-      const confirm = confirmInput?.value?.trim();
-      const role = roleSelect?.value || 'siswa';
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      // Validation
-      if (!name || !email || !password || !confirm) {
-        if (errorEl) errorEl.textContent = 'Semua field harus diisi';
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm-password").value;
+    const role = document.getElementById("role").value;
+
+    const errorBox = document.getElementById("error-message");
+    const successBox = document.getElementById("success-message");
+
+    errorBox.style.display = "none";
+    successBox.style.display = "none";
+
+    if (!name || !email || !password) {
+      errorBox.textContent = "Semua field wajib diisi.";
+      errorBox.style.display = "block";
+      return;
+    }
+
+    if (password !== confirm) {
+      errorBox.textContent = "Password tidak sama.";
+      errorBox.style.display = "block";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        errorBox.style.display = "block";
+        errorBox.textContent = result.message || "Gagal mendaftar.";
         return;
       }
 
-      if (password.length < 6) {
-        if (errorEl) errorEl.textContent = 'Password minimal 6 karakter';
-        return;
-      }
+      successBox.style.display = "block";
+      successBox.textContent = "Registrasi berhasil! Anda dapat login sekarang.";
 
-      if (password !== confirm) {
-        if (errorEl) errorEl.textContent = 'Password tidak cocok';
-        return;
-      }
+      setTimeout(() => (window.location.hash = "#/login"), 1500);
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        if (errorEl) errorEl.textContent = 'Email tidak valid';
-        return;
-      }
-
-      if (submitBtn) submitBtn.disabled = true;
-      if (errorEl) errorEl.textContent = '';
-      if (successEl) successEl.textContent = '';
-
-      try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            name, 
-            email, 
-            password,
-            role: role || 'siswa'
-          })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          if (successEl) {
-            successEl.textContent = 'Pendaftaran berhasil! Silakan login dengan akun Anda.';
-          }
-          
-          form.reset();
-          
-          setTimeout(() => {
-            window.location.hash = '#/login';
-          }, 2000);
-        } else {
-          if (errorEl) {
-            errorEl.textContent = data.message || 'Pendaftaran gagal. Email mungkin sudah terdaftar.';
-          }
-        }
-      } catch (err) {
-        console.error('Register error:', err);
-        if (errorEl) errorEl.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-      }
-    });
-  }
+    } catch {
+      errorBox.textContent = "Kesalahan server.";
+      errorBox.style.display = "block";
+    }
+  });
 }

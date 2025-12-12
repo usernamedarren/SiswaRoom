@@ -1,20 +1,17 @@
 import { API_BASE } from "../../config/api.js";
 import { AuthService } from "../../utils/auth.js";
 
-// Load subjects page static HTML
+// Load Subjects Page
 export async function initSubjects(container) {
   try {
     const response = await fetch(new URL('../static/subjects.html', import.meta.url).href);
-    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
-    const html = await response.text();
-    container.innerHTML = html;
-    
-    // Initialize logic
+    container.innerHTML = await response.text();
+
     loadSubjects();
     setupFilters();
+
   } catch (err) {
-    console.error('[SUBJECTS] Failed to load HTML:', err);
-    container.innerHTML = '<p>Error loading subjects page. Please refresh.</p>';
+    container.innerHTML = "<p class='text-gray center'>Error memuat halaman.</p>";
   }
 }
 
@@ -22,95 +19,89 @@ async function loadSubjects(category = null, search = null) {
   try {
     let url = `${API_BASE}/subjects`;
     const params = new URLSearchParams();
-    
-    if (category) params.append('category', category);
-    if (search) params.append('search', search);
-    
-    if (params.toString()) url += '?' + params.toString();
 
-    const res = await fetch(url, {
-      headers: AuthService.getAuthHeaders()
-    });
+    if (category) params.append("category", category);
+    if (search) params.append("search", search);
+
+    if (params.toString()) url += "?" + params.toString();
+
+    const res = await fetch(url, { headers: AuthService.getAuthHeaders() });
     const subjects = await res.json();
-    const grid = document.getElementById('subjects-grid');
-    const noSubjects = document.getElementById('no-subjects');
+
+    const grid = document.getElementById("subjects-grid");
+    const noSubjects = document.getElementById("no-subjects");
 
     if (!subjects || subjects.length === 0) {
-      grid.innerHTML = '';
-      noSubjects.style.display = 'block';
+      grid.innerHTML = "";
+      noSubjects.style.display = "block";
       return;
     }
 
-    noSubjects.style.display = 'none';
-    grid.innerHTML = subjects.map(subject => `
-      <div data-subject-id="${subject.subject_id}" class="subject-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;">
-        <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">
-          ${subject.name}
-        </h3>
-        <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 1rem 0;">
-          ${subject.description || 'Mata pelajaran'}
-        </p>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="background: #ddd6fe; color: #7c3aed; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
-            ${subject.category || 'general'}
-          </span>
-          <span style="color: #7c3aed; font-weight: 600;">→</span>
-        </div>
-      </div>
-    `).join('');
+    noSubjects.style.display = "none";
 
-    // Add click event listeners
-    grid.querySelectorAll('.subject-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const subjectId = card.dataset.subjectId;
-        window.location.hash = `#/subjects/${subjectId}`;
+    grid.innerHTML = subjects.map(sub => renderSubjectCard(sub)).join("");
+
+    // add click events
+    grid.querySelectorAll(".subject-card").forEach(card => {
+      card.addEventListener("click", () => {
+        window.location.hash = `#/subjects/${card.dataset.subjectId}`;
       });
     });
+
   } catch (err) {
-    console.error('Error loading subjects:', err);
+    console.error(err);
   }
 }
 
-function setupFilters() {
-  const categoryFilter = document.getElementById('category-filter');
-  const searchInput = document.getElementById('search-subjects');
+function renderSubjectCard(subject) {
+  return `
+    <div class="subject-card fade-in-up" data-subject-id="${subject.subject_id}">
+      <h3>${subject.name}</h3>
+      <p>${subject.description || "Tidak ada deskripsi"}</p>
 
-  // Load categories
+      <div class="subject-progress">
+        <div class="subject-label">
+          <span>Kategori</span>
+          <span>${subject.category || "General"}</span>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${Math.floor(Math.random()*60+30)}%"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setupFilters() {
+  const categoryFilter = document.getElementById("category-filter");
+  const searchInput = document.getElementById("search-subjects");
+
   loadCategories();
 
-  // Event listeners
-  if (categoryFilter) {
-    categoryFilter.addEventListener('change', () => {
-      const search = searchInput?.value || null;
-      loadSubjects(categoryFilter.value || null, search);
-    });
-  }
+  categoryFilter.addEventListener("change", () => {
+    loadSubjects(categoryFilter.value, searchInput.value);
+  });
 
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const category = categoryFilter?.value || null;
-      loadSubjects(category, searchInput.value || null);
-    });
-  }
+  searchInput.addEventListener("input", () => {
+    loadSubjects(categoryFilter.value, searchInput.value);
+  });
 }
 
 async function loadCategories() {
   try {
     const res = await fetch(`${API_BASE}/subjects/categories/list`, {
-      headers: AuthService.getAuthHeaders()
+      headers: AuthService.getAuthHeaders(),
     });
     const categories = await res.json();
-    const select = document.getElementById('category-filter');
 
-    if (!categories || categories.length === 0) return;
+    const select = document.getElementById("category-filter");
 
     categories.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat.category || cat;
-      option.textContent = cat.category || cat;
-      select.appendChild(option);
+      const op = document.createElement("option");
+      op.value = cat.category || cat;
+      op.textContent = cat.category || cat;
+      select.appendChild(op);
     });
-  } catch (err) {
-    console.error('Error loading categories:', err);
-  }
+  } catch {}
 }

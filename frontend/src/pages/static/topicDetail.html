@@ -1,27 +1,34 @@
-<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
-  <button onclick="window.history.back()" style="background: none; border: none; color: #7c3aed; font-size: 1rem; cursor: pointer; margin-bottom: 1rem; font-weight: 600;">
-    ← Kembali
-  </button>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Materi - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
 
-  <div style="margin-bottom: 2rem;">
-    <h1 style="color: #7c3aed; font-size: 2.5rem; font-weight: 700; margin: 0; margin-bottom: 0.5rem;" id="topic-title">
-      Topik
-    </h1>
-    <p style="color: #64748b; font-size: 1.1rem; margin: 0;" id="topic-description">
-      Deskripsi topik
-    </p>
-  </div>
+<body class="dark">
 
-  <!-- Materials -->
-  <div id="materials-container" style="display: grid; gap: 1.5rem;">
-    <div style="text-align: center; padding: 2rem;">
-      <p style="color: #64748b;">Memuat materi...</p>
+  <div class="container fade-in-up">
+
+    <a class="link" href="javascript:history.back()">← Kembali</a>
+
+    <div class="page-header">
+      <h1 id="topic-title">Topik</h1>
+      <p id="topic-description" class="text-gray"></p>
     </div>
+
+    <!-- MATERIAL LIST -->
+    <div id="materials-container" class="materials-list">
+      <p class="center text-gray">Memuat materi...</p>
+    </div>
+
+    <div id="no-materials" class="center" style="display:none;">
+      <div style="font-size:3rem;">📭</div>
+      <p class="text-gray">Belum ada materi</p>
+    </div>
+
   </div>
 
-  <!-- No Materials -->
-  <div id="no-materials" style="display: none; text-align: center; padding: 3rem;">
-    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
-    <p style="color: #64748b; font-size: 1.1rem;">Tidak ada materi ditemukan</p>
-  </div>
-</div>
+</body>
+</html>

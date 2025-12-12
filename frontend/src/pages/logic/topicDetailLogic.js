@@ -1,155 +1,104 @@
 import { API_BASE } from "../../config/api.js";
 import { AuthService } from "../../utils/auth.js";
 
-// Load topic detail page static HTML
 export async function initTopicDetail(container, subjectId) {
   try {
-    const response = await fetch(new URL('../static/topicDetail.html', import.meta.url).href);
-    if (!response.ok) throw new Error(`Failed to load: ${response.status}`);
-    const html = await response.text();
-    container.innerHTML = html;
-    
-    // Initialize logic
+    const res = await fetch(new URL('../static/topicDetail.html', import.meta.url).href);
+    container.innerHTML = await res.text();
     loadSubjectDetail(subjectId);
-  } catch (err) {
-    console.error('[TOPICDETAIL] Failed to load HTML:', err);
-    container.innerHTML = '<p>Error loading subject detail. Please refresh.</p>';
+
+  } catch {
+    container.innerHTML = "<p class='text-gray center'>Gagal memuat halaman.</p>";
   }
 }
 
 async function loadSubjectDetail(subjectId) {
   try {
-    // Load subject data (since topics table doesn't exist in DB)
+    // load subject as topic title fallback
     const subjectRes = await fetch(`${API_BASE}/subjects/${subjectId}`, {
-      headers: AuthService.getAuthHeaders()
+      headers: AuthService.getAuthHeaders(),
     });
+
     const subject = await subjectRes.json();
 
-    const titleEl = document.getElementById('topic-title');
-    const descEl = document.getElementById('topic-description');
-    const materialsEl = document.getElementById('materials-container');
+    document.getElementById("topic-title").textContent =
+      subject.name || "Topik";
 
-    if (titleEl) titleEl.textContent = subject.name || 'Mata Pelajaran';
-    if (descEl) descEl.textContent = subject.description || 'Deskripsi tidak tersedia';
+    document.getElementById("topic-description").textContent =
+      subject.description || "Deskripsi tidak tersedia.";
 
-    // Load materials for this subject
-    try {
-      const matsRes = await fetch(`${API_BASE}/materials?course_id=${subjectId}`, {
-        headers: AuthService.getAuthHeaders()
-      });
-      const materialsResponse = await matsRes.json();
-      const materials = Array.isArray(materialsResponse) ? materialsResponse : (materialsResponse.data || []);
+    // load materials
+    const matsRes = await fetch(`${API_BASE}/materials?course_id=${subjectId}`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+    const data = await matsRes.json();
 
-      if (!materials || materials.length === 0) {
-        if (materialsEl) {
-          materialsEl.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Tidak ada materi untuk mata pelajaran ini</p>';
-        }
-        return;
-      }
+    const materials = Array.isArray(data) ? data : (data.data || []);
+    const container = document.getElementById("materials-container");
+    const noMat = document.getElementById("no-materials");
 
-      if (materialsEl) {
-        materialsEl.innerHTML = materials.map(mat => renderMaterialCard(mat)).join('');
-      }
-    } catch (matsErr) {
-      console.error('Error loading materials:', matsErr);
-      if (materialsEl) {
-        materialsEl.innerHTML = '<p style="color: #ef4444;">Gagal memuat materi</p>';
-      }
+    if (!materials || materials.length === 0) {
+      container.innerHTML = "";
+      noMat.style.display = "block";
+      return;
     }
+
+    noMat.style.display = "none";
+
+    container.innerHTML = materials.map(renderMaterialCard).join("");
+
   } catch (err) {
-    console.error('Error loading subject detail:', err);
+    console.error(err);
   }
 }
 
-function renderMaterialCard(material) {
-  const icon = getMaterialIcon(material.content_type);
-  const preview = getMaterialPreview(material);
+function renderMaterialCard(mat) {
+  const icon = getMaterialIcon(mat.content_type);
 
   return `
-    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
-      <div style="display: flex; gap: 1.5rem;">
-        <div style="font-size: 2.5rem; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-          ${icon}
+    <div class="material-card fade-in-up">
+      <div class="material-info">
+        <h3>${icon} ${mat.title}</h3>
+        <p>${mat.description || "Tidak ada deskripsi"}</p>
+
+        <div class="material-meta">
+          <span class="quiz-chip">${mat.content_type}</span>
         </div>
-        <div style="flex: 1;">
-          <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">
-            ${material.title}
-          </h3>
-          <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 1rem 0;">
-            ${material.description || 'Tidak ada deskripsi'}
-          </p>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="background: #f0f9ff; color: #0ea5e9; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
-              ${material.content_type}
-            </span>
-          </div>
-          ${preview}
-        </div>
+
+        ${renderMaterialPreview(mat)}
       </div>
     </div>
   `;
 }
 
-function getMaterialIcon(contentType) {
+function getMaterialIcon(type) {
   const icons = {
-    'video': '🎬',
-    'pdf': '📄',
-    'document': '📝',
-    'image': '🖼️',
-    'link': '🔗',
-    'text': '📑'
+    video: "🎬",
+    pdf: "📄",
+    link: "🔗",
+    image: "🖼️",
+    text: "📝",
+    document: "📑",
   };
-  return icons[contentType] || '📚';
+  return icons[type] || "📘";
 }
 
-function getMaterialPreview(material) {
-  if (!material.content_type) return '';
+function renderMaterialPreview(mat) {
+  if (!mat.content) return "";
 
-  switch (material.content_type.toLowerCase()) {
-    case 'video':
-      return material.content ? `
-        <div style="margin-top: 1rem;">
-          <video style="width: 100%; border-radius: 8px;" controls>
-            <source src="${material.content}" type="video/mp4">
-            Browser Anda tidak mendukung video.
-          </video>
-        </div>
-      ` : '';
-    
-    case 'image':
-      return material.content ? `
-        <div style="margin-top: 1rem;">
-          <img src="${material.content}" style="max-width: 100%; border-radius: 8px;" alt="${material.title}" />
-        </div>
-      ` : '';
-    
-    case 'pdf':
-      return material.content ? `
-        <div style="margin-top: 1rem;">
-          <a href="${material.content}" target="_blank" style="display: inline-block; background: #7c3aed; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
-            📥 Unduh PDF
-          </a>
-        </div>
-      ` : '';
-    
-    case 'link':
-      return material.content ? `
-        <div style="margin-top: 1rem;">
-          <a href="${material.content}" target="_blank" style="display: inline-block; background: #0ea5e9; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
-            🔗 Buka Link Eksternal
-          </a>
-        </div>
-      ` : '';
-    
-    case 'text':
-    case 'document':
-      return material.content ? `
-        <div style="margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto; color: #334155;">
-          ${material.content}
-        </div>
-      ` : '';
-    
+  switch (mat.content_type) {
+    case "video":
+      return `<video controls class="material-video"><source src="${mat.content}" /></video>`;
+    case "image":
+      return `<img src="${mat.content}" class="material-image"/>`;
+    case "pdf":
+      return `<a class="btn btn-primary" href="${mat.content}" target="_blank">📥 Unduh PDF</a>`;
+    case "link":
+      return `<a class="btn btn-primary" href="${mat.content}" target="_blank">🔗 Buka Link</a>`;
+    case "text":
+    case "document":
+      return `<div class="material-text">${mat.content}</div>`;
     default:
-      return '';
+      return "";
   }
 }

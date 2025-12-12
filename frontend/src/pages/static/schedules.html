@@ -1,31 +1,45 @@
-<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
-  <div style="margin-bottom: 3rem;">
-    <h1 style="color: #7c3aed; font-size: 2.5rem; font-weight: 700; margin: 0; margin-bottom: 0.5rem;">
-      🗓️ Jadwal Kelas
-    </h1>
-    <p style="color: #64748b; font-size: 1.1rem; margin: 0;">
-      Lihat jadwal kelas Anda
-    </p>
-  </div>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedules - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
 
-  <!-- Calendar View -->
-  <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 2rem;">
-    <h2 style="margin: 0 0 1.5rem 0; color: #1e293b;">Kalender Kelas</h2>
-    <div id="calendar-view" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-      <p style="color: #94a3b8; text-align: center; padding: 1rem;">Memuat kalender...</p>
+<body class="dark">
+  <div class="container fade-in-up">
+
+    <div class="page-header">
+      <h1>Jadwal</h1>
+      <p>Lihat jadwal kelas Anda</p>
     </div>
-  </div>
 
-  <!-- Schedules List -->
-  <div id="schedules-container" style="display: grid; gap: 1rem;">
-    <div style="text-align: center; padding: 2rem;">
-      <p style="color: #64748b;">Memuat jadwal...</p>
+    <!-- CALENDAR -->
+    <div class="calendar-wrapper">
+      <div class="calendar-header">
+        <div>Senin</div>
+        <div>Selasa</div>
+        <div>Rabu</div>
+        <div>Kamis</div>
+        <div>Jumat</div>
+      </div>
+
+      <div id="calendar-view" class="calendar-grid">
+        <p class="center text-gray">Memuat kalender...</p>
+      </div>
     </div>
-  </div>
 
-  <!-- No Schedules -->
-  <div id="no-schedules" style="display: none; text-align: center; padding: 3rem;">
-    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
-    <p style="color: #64748b; font-size: 1.1rem;">Tidak ada jadwal tersedia</p>
+    <!-- LIST -->
+    <div id="schedules-container" class="schedule-list">
+      <p class="center text-gray">Memuat jadwal...</p>
+    </div>
+
+    <div id="no-schedules" class="center" style="display:none;">
+      <div style="font-size:3rem;">📭</div>
+      <p class="text-gray">Tidak ada jadwal tersedia</p>
+    </div>
+
   </div>
-</div>
+</body>
+</html>
