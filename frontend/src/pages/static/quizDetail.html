@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Detail</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
+
+<body class="dark">
+  <div class="container fade-in-up">
+
+    <div class="card quiz-card">
+
+      <!-- HEADER -->
+      <div class="quiz-header">
+        <div>
+          <h3 class="quiz-title">Bilangan Bulat</h3>
+        </div>
+        <div class="quiz-counter">
+          <div class="quiz-progress mini">
+            <div class="quiz-progress-bar" style="width: 35%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTION -->
+      <div class="quiz-question">
+        Hasil dari <strong>-15 + 23</strong> adalah...
+      </div>
+
+      <!-- OPTIONS -->
+      <div class="quiz-options">
+        <button class="quiz-option">8</button>
+        <button class="quiz-option">-8</button>
+        <button class="quiz-option">38</button>
+        <button class="quiz-option">-38</button>
+      </div>
+      <!-- EXPLANATION (hidden by default) -->
+        <div class="quiz-explanation" aria-hidden="true">
+        <strong class="explanation-title">Penjelasan:</strong>
+        <p class="quiz-explanation-text"></p>
+      </div>
+
+
+      <!-- ACTION -->
+      <div class="quiz-actions">
+        <button class="btn btn-primary quiz-submit disabled" disabled>
+          Kirim Jawaban
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+</body>
+</html>

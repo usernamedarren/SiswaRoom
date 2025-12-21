@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css" />
+</head>
+
+<body class="dark page-profile">
+  <div class="container fade-in-up">
+
+    <!-- Hero / Header -->
+    <section class="profile-hero">
+      <div class="profile-hero__left">
+        <div class="profile-hero__eyebrow">
+          <span class="dot"></span>
+          <span>Akun • SiswaRoom</span>
+        </div>
+        <h1 class="profile-hero__title">Profil</h1>
+        <p class="profile-hero__desc">
+          Kelola informasi akun dan lihat ringkasan progres belajar kamu.
+        </p>
+      </div>
+
+      <div class="profile-hero__actions">
+        <button id="profile-refresh" class="btn btn-secondary" type="button">
+          🔄 Muat ulang
+        </button>
+        <a
+          href="#/"
+          class="btn btn-primary profile-hero__home"
+          style="text-decoration:none; display:inline-flex; align-items:center;"
+        >
+          🏠 Beranda
+        </a>
+      </div>
+
+      <div class="profile-hero__glow" aria-hidden="true"></div>
+    </section>
+
+    <div class="profile-grid">
+      <!-- LEFT: Identity + stats -->
+      <div class="profile-left">
+        <div class="card profile-identity">
+          <div class="profile-identity__top">
+            <div class="profile-avatar" aria-hidden="true">
+              <span id="profile-initials">SR</span>
+            </div>
+
+            <div class="profile-identity__meta">
+              <h2 id="profile-name">-</h2>
+              <div class="profile-meta-row">
+                <span class="pill" id="profile-role">-</span>
+                <span class="text-gray" id="profile-email">-</span>
+              </div>
+              <div class="profile-sub" id="profile-sub">—</div>
+            </div>
+          </div>
+
+          <!-- KPI -->
+          <div class="profile-kpi profile-kpi--two">
+            <div class="stat-card">
+              <div class="stat-iconbox">🎯</div>
+              <div class="stat-label">Quiz Selesai</div>
+              <div class="stat-value" id="kpi-quizzes">-</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-iconbox">📝</div>
+              <div class="stat-label">Materi Dibaca</div>
+              <div class="stat-value" id="kpi-materials">-</div>
+            </div>
+          </div>
+
+          <div
+            class="profile-tip"
+            id="profile-tip"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Forms -->
+      <div class="profile-right">
+
+        <!-- Informasi Akun -->
+        <div class="card profile-edit">
+          <div class="card-head">
+            <h3>Informasi Akun</h3>
+          </div>
+
+          <p class="text-gray" style="margin-top:.3rem">
+            Ubah nama & email akun kamu. Perubahan akan tersimpan jika server aktif.
+          </p>
+
+          <div id="profile-alert" class="alert" style="display:none"></div>
+
+          <form id="profile-form" autocomplete="off">
+            <div class="input-group">
+              <label for="input-name">Nama</label>
+              <input
+                id="input-name"
+                class="input"
+                type="text"
+                placeholder="Nama lengkap"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="input-email">Email</label>
+              <input
+                id="input-email"
+                class="input"
+                type="email"
+                placeholder="nama@email.com"
+              />
+            </div>
+
+            <div class="profile-actions">
+              <button
+                id="profile-save"
+                class="btn btn-primary"
+                type="submit"
+              >
+                💾 Simpan Perubahan
+              </button>
+              <button
+                id="profile-reset"
+                class="btn btn-secondary"
+                type="button"
+              >
+                ↩️ Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Ganti Password -->
+        <div class="card profile-password">
+          <div class="card-head">
+            <h3>Ganti Password</h3>
+          </div>
+
+          <p class="text-gray" style="margin-top:.3rem">
+            Buat password baru yang kuat. Minimal 8 karakter, disarankan
+            kombinasi huruf besar, huruf kecil, angka, dan simbol.
+          </p>
+
+          <div id="password-alert" class="alert" style="display:none"></div>
+
+          <form id="password-form" autocomplete="off">
+            <div class="input-group">
+              <label for="input-current-password">Password Saat Ini</label>
+              <input
+                id="input-current-password"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div class="profile-password__row">
+              <div class="input-group">
+                <label for="input-new-password">Password Baru</label>
+                <input
+                  id="input-new-password"
+                  class="input"
+                  type="password"
+                  placeholder="Minimal 8 karakter"
+                />
+              </div>
+
+              <div class="input-group">
+                <label for="input-confirm-password">Konfirmasi Password</label>
+                <input
+                  id="input-confirm-password"
+                  class="input"
+                  type="password"
+                  placeholder="Ulangi password baru"
+                />
+              </div>
+            </div>
+
+            <div class="profile-password__meta">
+              <div class="text-gray" id="password-hint">—</div>
+
+              <div class="profile-actions">
+                <button
+                  id="password-save"
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  🔒 Ubah Password
+                </button>
+                <button
+                  id="password-reset"
+                  class="btn btn-secondary"
+                  type="button"
+                >
+                  ↩️ Reset
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

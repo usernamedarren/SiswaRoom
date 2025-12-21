@@ -27,10 +27,10 @@ export const SubjectModel = {
   // Get single subject
   async getById(id) {
     const [rows] = await db.query(`
-      SELECT 
+      `SELECT 
         s.*,
-        u.name as teacher_name,
-        u.email as teacher_email,
+        u.full_name as teacher_name,
+        u.email as teacher_email
         COUNT(DISTINCT uc.user_id) as total_enrolled,
         COUNT(DISTINCT m.id) as material_count,
         COUNT(DISTINCT q.id) as quiz_count

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
+
+<body class="dark">
+  <div class="container fade-in-up">
+
+    <div class="page-header">
+      <h1>Courses</h1>
+      <p>Pilih course untuk mulai belajar</p>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div style="display:flex; gap:.5rem; align-items:center;">
+        <input id="search-courses" class="input" type="search" placeholder="Cari kursus atau deskripsi..." aria-label="Cari kursus" />
+      </div>
+    </div>
+
+    <div id="no-courses" class="center" style="display:none;">
+      <div style="font-size:3rem;">📭</div>
+      <p class="text-gray">Tidak ada course tersedia</p>
+    </div>
+
+    <div id="courses-container">
+      <p class="center text-gray">Memuat course...</p>
+    </div> 
+
+  </div>
+</body>
+</html>

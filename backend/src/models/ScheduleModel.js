@@ -4,10 +4,10 @@ export const ScheduleModel = {
   // Get all schedules
   async getAll() {
     const [rows] = await db.query(`
-      SELECT 
-        s.*,
+      `SELECT 
+        cs.*,
         sub.name as subject_name,
-        u.name as teacher_name
+        u.full_name as teacher_name
       FROM schedules s
       LEFT JOIN subjects sub ON s.subject_id = sub.id
       LEFT JOIN users u ON s.teacher_id = u.id

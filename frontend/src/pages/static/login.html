@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
+
+<body class= "dark">
+  <div class="auth-wrapper">
+    <div class="auth-card card fade-in-up">
+      <button class="back-btn back-btn--edge" aria-label="Kembali ke Beranda" onclick="location.hash='#/'">‹</button>
+
+      <div class="center" style="margin-bottom: 1rem;">
+        <h1 class="auth-title">SiswaRoom</h1>
+        <p class="auth-subtitle">Platform Pembelajaran Digital</p>
+      </div>
+
+      <div id="error-message" class="auth-error" style="display:none;"></div>
+
+      <!-- Quick Login -->
+      <div class="card" style="margin-bottom:1rem;">
+        <p class="center text-gray">Login Cepat (Demo)</p>
+
+        <div class="quick-btn" style="display:flex; gap:1rem; margin-top:1rem;">
+          <!-- <button id="quick-admin" class="btn btn-primary full">Admin</button> -->
+          <button id="quick-siswa" class="btn btn-primary full">Siswa</button>
+          <button id="quick-guru" class="btn btn-primary full">Guru</button>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <form id="login-form" class="auth-form">
+        <div class="input-group">
+          <label>Email</label>
+          <input id="email" type="email" class="input" placeholder="email@example.com">
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <input id="password" type="password" class="input" placeholder="••••••••">
+        </div>
+
+        <div style="display:flex; gap:0.4rem; align-items:center;">
+          <input type="checkbox" id="remember-me">
+          <label for="remember-me">Ingat saya</label>
+        </div>
+
+        <button class="btn btn-primary full" id="submit-btn">Masuk</button>
+      </form>
+
+      <div class="center" style="margin-top:1rem;">
+        <p>Belum punya akun?</p>
+        <a href="#/register" class="link">Daftar sekarang</a>
+      </div>
+
+
+    </div>
+  </div>
+</body>
+</html>

@@ -7,7 +7,7 @@ export async function getUserCourses(req, res, next) {
     const { id: user_id } = req.user;
     
     const [courses] = await db.query(
-      `SELECT s.*, u.name as teacher_name
+      `SELECT s.*, u.full_name as teacher_name
        FROM subjects s
        LEFT JOIN users u ON s.teacher_id = u.id
        WHERE s.id IN (
@@ -31,7 +31,7 @@ export async function getAvailableCourses(req, res, next) {
 
     let query = `
       SELECT s.*, 
-             u.name as teacher_name,
+             u.full_name as teacher_name,
              COUNT(DISTINCT m.id) as total_materials,
              COUNT(DISTINCT q.id) as total_quizzes,
              (CASE WHEN uc.user_id IS NOT NULL THEN 1 ELSE 0 END) as is_enrolled
@@ -128,7 +128,7 @@ export async function getCourseDetail(req, res, next) {
 
     // Get course info
     const [courses] = await db.query(
-      `SELECT s.*, u.name as teacher_name, u.email as teacher_email
+      `SELECT s.*, u.full_name as teacher_name, u.email as teacher_email
        FROM subjects s
        LEFT JOIN users u ON s.teacher_id = u.id
        WHERE s.id = ?`,

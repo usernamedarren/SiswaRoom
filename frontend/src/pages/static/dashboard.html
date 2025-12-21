@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css" />
+</head>
+
+<body class="dark page-dashboard">
+  <div class="container fade-in-up">
+    <!-- HEADER -->
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Selamat datang, <strong id="user-name">User</strong> 👋</p>
+    </div>
+    <!-- STATS -->
+    <div class="stat-container">
+      <div class="stat-card">
+        <div class="stat-iconbox" style="background: var(--primary-purple)">
+          <img src="/icons/book.png" alt="Mata Pelajaran" />
+        </div>
+        <div class="stat-label">Mata Pelajaran</div>
+        <div class="stat-value" id="stat-subjects">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-iconbox" style="background: var(--primary-blue)">📝</div>
+        <div class="stat-label">Materi</div>
+        <div class="stat-value" id="stat-materials">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-iconbox" style="background: var(--primary-orange)">❓</div>
+        <div class="stat-label">Soal</div>
+        <div class="stat-value" id="stat-questions">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-iconbox" style="background: var(--primary-green)">🎯</div>
+        <div class="stat-label">Quiz</div>
+        <div class="stat-value" id="stat-quizzes">-</div>
+      </div>
+    </div>
+
+    <!-- STAT CHARTS -->
+    <div class="stats-charts">
+      <div class="card chart-card">
+        <h3>Rata‑rata Nilai Kuis per Mata Pelajaran</h3>
+        <canvas id="chart-quiz-scores" width="400" height="180"></canvas>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Progress Membaca Mata Pelajaran</h3>
+        <canvas id="chart-subject-progress" width="400" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart status (debug) -->
+    <div id="chart-status" class="chart-status" aria-live="polite"></div>
+
+    <!-- Fallback area (used only if charts cannot be rendered) -->
+    <div id="chart-fallback" class="chart-fallback" style="margin-top:.6rem;"></div>
+
+    <!-- 2 COLUMN LAYOUT -->
+    <div class="dashboard-grid">
+      <!-- LEFT SIDE -->
+      <div>
+        <!-- KURSUS SAYA -->
+        <div class="card">
+          <h3>Kursus Saya</h3>
+          <div id="my-courses-list" class="list-column">
+            <p class="center text-gray">Memuat kursus...</p>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT SIDE -->
+      <div>
+        <!-- Recent Activity -->
+        <div class="card">
+          <h3>Aktivitas Terakhir</h3>
+          <div id="recent-activity" class="list-column">
+            <p class="center text-gray">Memuat aktivitas...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</body>
+</html>

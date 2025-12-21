@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css" />
+</head>
+
+<body class="dark page-course">
+  <div class="container fade-in-up">
+
+    <div style="margin:0.15rem 0; display:block;" id="back-to-materials-wrap">
+      <button class="btn back-btn" id="back-to-materials">← Kembali</button>
+    </div>
+
+    <div class="page-header">
+      <h1 id="course-title">Judul Kursus</h1>
+      <p id="course-teacher">Pengajar: -</p>
+    </div>
+
+    <!-- Course menu / tabs -->
+
+    <div class="admin-tabs course-tabs" id="course-tabs">
+      <button class="admin-tab-btn active" data-tab="materi">Materi</button>
+      <button class="admin-tab-btn" data-tab="kuis">Kuis</button>
+    </div>
+
+    <div class="card" data-section="materi">
+      <h3>Materi</h3>
+
+      <!-- Inline course description (dummy now; will be populated from DB later) -->
+      <p id="course-desc" class="text-gray" style="margin-top:.4rem; margin-bottom:.8rem;">Deskripsi dummy: ringkasan materi dan tujuan pembelajaran akan tampil di sini. (Sumber akan diambil dari database nanti)</p>
+
+      <div id="course-materials" class="list-column">
+
+        <!-- Static preview cards (visible when opening HTML directly) -->
+        <div class="material-card">
+          <div class="material-card-info">
+            <h4>Bilangan Bulat dan Pecahan</h4>
+            <p class="text-gray">Pelajari operasi bilangan bulat, pecahan, dan aplikasinya dalam kehidupan sehari-hari</p>
+          </div>
+          <div class="material-card-action">
+            <button class="btn btn-primary start-material-btn" data-index="0">Mulai Belajar</button>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-card-info">
+            <h4>Aljabar Dasar</h4>
+            <p class="text-gray">Memahami variabel, persamaan linear, dan pertidaksamaan</p>
+          </div>
+          <div class="material-card-action">
+            <button class="btn btn-primary start-material-btn" data-index="1">Mulai Belajar</button>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-card-info">
+            <h4>Geometri dan Bangun Ruang</h4>
+            <p class="text-gray">Mengenal bangun datar, bangun ruang, dan rumus-rumusnya</p>
+          </div>
+          <div class="material-card-action">
+            <button class="btn btn-primary start-material-btn" data-index="2">Mulai Belajar</button>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-card-info">
+            <h4>Statistika dan Peluang</h4>
+            <p class="text-gray">Menganalisis data, mean, median, modus, dan peluang kejadian</p>
+          </div>
+          <div class="material-card-action">
+            <button class="btn btn-primary start-material-btn" data-index="3">Mulai Belajar</button>
+          </div>
+        </div>
+
+        <!-- Material detail preview (hidden) -->
+        <div id="material-detail" class="material-detail" style="display:none; margin-top: .8rem;">
+
+          <h3 id="detail-title">Bilangan Bulat dan Pecahan</h3>
+          <p class="text-gray" id="detail-desc">Pelajari operasi bilangan bulat, pecahan, dan aplikasinya dalam kehidupan sehari-hari</p>
+
+          <h4 style="margin-top:1rem;">Deskripsi</h4>
+          <p id="detail-content">Bilangan bulat adalah bilangan yang terdiri dari bilangan negatif, nol, dan bilangan positif. Pecahan adalah bilangan yang menyatakan bagian dari keseluruhan.</p>
+
+          <h4 style="margin-top:1rem;">Poin-poin Penting</h4>
+          <ol id="detail-points">
+            <li>Operasi penjumlahan dan pengurangan bilangan bulat</li>
+            <li>Perkalian dan pembagian bilangan bulat</li>
+            <li>Pecahan biasa, desimal, dan persen</li>
+            <li>Operasi pada pecahan</li>
+          </ol>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card" data-section="kuis" style="display:none;">
+      <h3>Kuis</h3>
+      <div id="course-quizzes" class="list-column">
+        <p class="center text-gray">Memuat kuis...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Demo script to allow previewing material detail when opening HTML directly
+    (function(){
+      const materials = [
+        {
+          title: 'Bilangan Bulat dan Pecahan',
+          desc: 'Pelajari operasi bilangan bulat, pecahan, dan aplikasinya dalam kehidupan sehari-hari',
+          content: 'Bilangan bulat adalah bilangan yang terdiri dari bilangan negatif, nol, dan bilangan positif. Pecahan adalah bilangan yang menyatakan bagian dari keseluruhan. Materi ini membahas operasi dasar dan contoh penerapan.',
+          points: ['Operasi penjumlahan dan pengurangan bilangan bulat','Perkalian dan pembagian bilangan bulat','Pecahan biasa, desimal, dan persen','Operasi pada pecahan']
+        },
+        { title: 'Aljabar Dasar', desc: 'Memahami variabel, persamaan linear, dan pertidaksamaan', content: 'Aljabar dasar', points: ['Pengertian variabel dan konstanta','Menyelesaikan persamaan linear','Pertidaksamaan dan grafiknya','Penerapan aljabar dalam masalah riil'] },
+        { title: 'Geometri dan Bangun Ruang', desc: 'Mengenal bangun datar, bangun ruang, dan rumus-rumusnya', content: 'Geometri singkat', points: ['Sifat dan rumus bangun datar','Volume dan luas permukaan bangun ruang','Penerapan rumus pada soal cerita','Strategi pemecahan masalah geometri'] },
+        { title: 'Statistika dan Peluang', desc: 'Menganalisis data, mean, median, modus, dan peluang kejadian', content: 'Statistika singkat', points: ['Menghitung mean, median, dan modus','Mengukur sebaran data','Pengenalan peluang dan aturan dasar','Menganalisis contoh data nyata'] }
+      ];
+
+      const startBtns = Array.from(document.querySelectorAll('.start-material-btn'));
+      const detail = document.getElementById('material-detail');
+      const list = document.getElementById('course-materials');
+
+      let demoState = 'list';
+
+      function showDetail(i){
+        demoState = 'detail';
+        const m = materials[i];
+        document.getElementById('detail-title').textContent = m.title;
+        document.getElementById('detail-desc').textContent = m.desc;
+        document.getElementById('detail-content').textContent = m.content;
+        document.getElementById('detail-points').innerHTML = m.points.map(p => `<li>${p}</li>`).join('');
+
+        // hide list cards and show detail
+        list.querySelectorAll('.material-card').forEach(c => c.style.display = 'none');
+        detail.style.display = '';
+        const wrap = document.getElementById('back-to-materials-wrap');
+        if (wrap) wrap.style.display = '';
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      function showList(){
+        demoState = 'list';
+        list.querySelectorAll('.material-card').forEach(c => c.style.display = '');
+        detail.style.display = 'none';
+        const wrap = document.getElementById('back-to-materials-wrap');
+        if (wrap) wrap.style.display = '';
+      }
+
+      startBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = Number(btn.dataset.index || 0);
+          showDetail(idx);
+        });
+      });
+
+      const backBtn = document.getElementById('back-to-materials');
+      if (backBtn) backBtn.addEventListener('click', () => {
+        if (demoState === 'detail') {
+          showList();
+        } else {
+          window.location.hash = '#/courses';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

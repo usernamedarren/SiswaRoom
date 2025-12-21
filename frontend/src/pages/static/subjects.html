@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mata Pelajaran - SiswaRoom</title>
+  <link rel="stylesheet" href="../../styles/global.css">
+</head>
+
+<body class="dark">
+  <div class="container fade-in-up">
+
+    <div class="page-header">
+      <h1>Mata Pelajaran</h1>
+      <p>Jelajahi mata pelajaran yang tersedia</p>
+    </div>
+
+    <!-- FILTER -->
+    <div class="flex" style="gap:1rem; margin-bottom:1rem;">
+      <select id="category-filter" class="input" style="max-width:250px;">
+        <option value="">Semua Kategori</option>
+      </select>
+
+      <input id="search-subjects" class="input" placeholder="Cari mata pelajaran...">
+    </div>
+
+    <!-- SUBJECT GRID -->
+    <div id="subjects-grid" class="subjects-grid">
+      <p class="center text-gray">Memuat mata pelajaran...</p>
+    </div>
+
+    <!-- EMPTY -->
+    <div id="no-subjects" class="center" style="display:none;">
+      <div style="font-size:3rem;">📭</div>
+      <p class="text-gray">Tidak ada hasil</p>
+    </div>
+
+  </div>
+</body>
+</html>
