@@ -1,12 +1,22 @@
 import { db } from "../config/db.js";
 
 export async function getAllCourses() {
-  const [rows] = await db.query("SELECT * FROM courses");
+  const [rows] = await db.query(`
+    SELECT c.*, u.full_name AS teacher_name
+    FROM courses c
+    LEFT JOIN users u ON c.teacher_id = u.id
+  `);
   return rows;
 }
 
 export async function getCourseById(id) {
-  const [rows] = await db.query("SELECT * FROM courses WHERE id = ?", [id]);
+  const [rows] = await db.query(
+    `SELECT c.*, u.full_name AS teacher_name
+     FROM courses c
+     LEFT JOIN users u ON c.teacher_id = u.id
+     WHERE c.id = ?`,
+    [id]
+  );
   return rows[0] || null;
 }
 

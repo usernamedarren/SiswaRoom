@@ -1,11 +1,27 @@
 import * as CourseModel from "../models/course.models.js";
 
 export async function fetchAllCourses() {
-  return await CourseModel.getAllCourses();
+  const rows = await CourseModel.getAllCourses();
+  return rows.map((course) => ({
+    ...course,
+    course_id: `course-${course.id}`,
+    course_name: course.name,
+    teacher_name: course.teacher_name || course.teacher || undefined,
+  }));
 }
 
 export async function fetchCourseById(id) {
-  return await CourseModel.getCourseById(id);
+  const numericId = typeof id === "string" && id.startsWith("course-")
+    ? id.replace("course-", "")
+    : id;
+  const course = await CourseModel.getCourseById(numericId);
+  if (!course) return null;
+  return {
+    ...course,
+    course_id: `course-${course.id}`,
+    course_name: course.name,
+    teacher_name: course.teacher_name || course.teacher || undefined,
+  };
 }
 
 export async function fetchCoursesByTeacher(teacherId) {
