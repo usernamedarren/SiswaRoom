@@ -111,10 +111,14 @@ async function loadDashboardStats() {
       console.warn('[DASHBOARD] stats fallback to mock', err);
     }
 
-    document.getElementById("stat-subjects").textContent = stats.subjects ?? "-";
-    document.getElementById("stat-materials").textContent = stats.materials ?? "-";
-    document.getElementById("stat-questions").textContent = stats.questions ?? "-";
-    document.getElementById("stat-quizzes").textContent = stats.quizzes ?? "-";
+    const elSubj = document.getElementById("stat-subjects");
+    const elMats = document.getElementById("stat-materials");
+    const elQs = document.getElementById("stat-questions");
+    const elQz = document.getElementById("stat-quizzes");
+    if (elSubj) elSubj.textContent = String(stats.subjects ?? "-");
+    if (elMats) elMats.textContent = String(stats.materials ?? "-");
+    if (elQs) elQs.textContent = String(stats.questions ?? "-");
+    if (elQz) elQz.textContent = String(stats.quizzes ?? "-");
 
   } catch (err) {
     console.error("[DASHBOARD] Failed to load stats:", err);
@@ -124,6 +128,7 @@ async function loadDashboardStats() {
 async function loadMyCourses() {
   try {
     const container = document.getElementById("my-courses-list");
+    if (!container) return;
 
     let courses = [];
     try {
@@ -167,8 +172,8 @@ async function loadMyCourses() {
 
   } catch (err) {
     console.error('[DASHBOARD] loadMyCourses error', err);
-    document.getElementById("my-courses-list").innerHTML =
-      `<p class="center text-gray">Gagal memuat kursus.</p>`;
+    const container = document.getElementById("my-courses-list");
+    if (container) container.innerHTML = `<p class="center text-gray">Gagal memuat kursus.</p>`;
   }
 } 
 
@@ -230,6 +235,7 @@ async function loadUpcomingSchedules() {
 async function loadRecentActivity() {
   try {
     const container = document.getElementById("recent-activity");
+    if (!container) return;
 
     let activities = [];
     try {

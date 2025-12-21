@@ -8,7 +8,10 @@ export async function getMaterials(req, res) {
       return res.status(400).json({ message: "course_id is required" });
     }
 
-    const materials = await MaterialService.fetchMaterialsByCourse(course_id);
+    const normalizedId = String(course_id).startsWith("course-")
+      ? String(course_id).replace("course-", "")
+      : course_id;
+    const materials = await MaterialService.fetchMaterialsByCourse(normalizedId);
     res.json(materials);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch materials", error: err.message });

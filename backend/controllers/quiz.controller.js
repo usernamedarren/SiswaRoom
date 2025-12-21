@@ -6,7 +6,10 @@ export async function getQuizzes(req, res) {
 
     let quizzes;
     if (course_id) {
-      quizzes = await QuizService.fetchQuizzesByCourse(course_id);
+      const normalizedId = String(course_id).startsWith("course-")
+        ? String(course_id).replace("course-", "")
+        : course_id;
+      quizzes = await QuizService.fetchQuizzesByCourse(normalizedId);
     } else {
       quizzes = await QuizService.fetchAllQuizzes();
     }
