@@ -441,6 +441,7 @@ async function loadCourse(container, courseId) {
     function showMaterialDetail(index) {
       lastView = 'detail';
       const m = course.materials[index];
+      const videoHtml = renderMaterialVideo(m.video);
       matCard.innerHTML = `
         <div class="material-detail">
           <h3>${m.title}</h3>
@@ -449,13 +450,7 @@ async function loadCourse(container, courseId) {
               <h4 style="margin-top:1rem;">Deskripsi</h4>
           <p>${m.content || m.description}</p>
 
-          ${m.video ? `
-            <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
-            <video class="material-video" controls preload="metadata" src="${m.video}">
-              Browser Anda tidak mendukung elemen video.
-            </video>
-            <div style="margin-top:.5rem"><a class="btn" href="${m.video}" target="_blank" rel="noopener">Buka Video di Tab Baru</a></div>
-          ` : `<div class="material-video-placeholder text-gray" style="margin-top:1rem;">Video belum tersedia</div>`}
+          ${videoHtml}
 
           <h4 style="margin-top:1rem;">Poin-poin Penting</h4>
           <ol>
@@ -508,4 +503,67 @@ async function loadCourse(container, courseId) {
     console.error("[COURSE] Failed to fetch course:", err);
     container.innerHTML = `<p class="center text-gray">Gagal memuat data kursus.</p>`;
   }
+}
+
+// Helpers to render video content (YouTube embed or direct video)
+function isYouTubeUrl(url) {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    return host.includes('youtube.com') || host.includes('youtu.be');
+  } catch {
+    return false;
+  }
+}
+
+function toYouTubeEmbed(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    if (host.includes('youtu.be')) {
+      // Format: https://youtu.be/VIDEO_ID
+      const id = u.pathname.split('/').filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+    if (host.includes('youtube.com')) {
+      if (u.pathname.startsWith('/embed/')) {
+        // Already embed format
+        return url;
+      }
+      // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID
+      const id = u.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+  } catch {
+    // fallthrough
+  }
+  return '';
+}
+
+function renderMaterialVideo(url) {
+  if (!url) {
+    return `<div class="material-video-placeholder text-gray" style="margin-top:1rem;">Video belum tersedia</div>`;
+  }
+  const isYT = isYouTubeUrl(url);
+  if (isYT) {
+    const embedUrl = toYouTubeEmbed(url);
+    if (embedUrl) {
+      return `
+        <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
+        <div class="material-video" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:.5rem;background:#000;">
+          <iframe src="${embedUrl}" title="YouTube video" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+        <div style="margin-top:.5rem"><a class="btn" href="${url}" target="_blank" rel="noopener">Buka Video di Tab Baru</a></div>
+      `;
+    }
+  }
+  // Fallback: render as HTML5 video (e.g., direct MP4)
+  return `
+    <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
+    <video class="material-video" controls preload="metadata" src="${url}">
+      Browser Anda tidak mendukung elemen video.
+    </video>
+    <div style="margin-top:.5rem"><a class="btn" href="${url}" target="_blank" rel="noopener">Buka Video di Tab Baru</a></div>
+  `;
 }
