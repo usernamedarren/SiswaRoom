@@ -3,6 +3,11 @@ import { API_BASE } from "../../utils/config.js";
 
 const DUMMY_DATA = false;
 
+// ID video untuk kartu "Lain-lain" (bisa override lewat VITE_OTHER_VIDEO_ID)
+const OTHER_VIDEO_ID = (typeof import.meta !== "undefined" && import.meta.env?.VITE_OTHER_VIDEO_ID)
+  ? String(import.meta.env.VITE_OTHER_VIDEO_ID)
+  : "lain101";
+
 let ALL_COURSES = []; // ⬅️ sumber kebenaran tunggal
 
 function debounce(fn, wait = 180) {
@@ -152,7 +157,7 @@ function renderCourses(courses) {
   const otherSafe = other.length
     ? other
     : [{
-        course_id: "lain101",
+        course_id: OTHER_VIDEO_ID,
         course_name: "Lain-Lain",
         description: "Pelajaran tambahan & pendukung.",
       }];
