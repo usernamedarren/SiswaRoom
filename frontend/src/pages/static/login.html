@@ -47,7 +47,10 @@
           <label for="remember-me">Ingat saya</label>
         </div>
 
-        <button class="btn btn-primary full" id="submit-btn">Masuk</button>
+        <div style="display:flex; gap:0.6rem; margin-top:0.6rem;">
+          <button id="submit-btn" class="btn btn-primary" style="flex:1;">Masuk</button>
+          <button id="edutoon-login" class="btn btn-secondary" style="flex:1;">Login as EduToon</button>
+        </div>
       </form>
 
       <div class="center" style="margin-top:1rem;">
@@ -58,5 +61,35 @@
 
     </div>
   </div>
+  <script>
+    async function showError(msg) {
+      const el = document.getElementById('error-message');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    document.getElementById('edutoon-login').addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch('/api/auth/edutoon', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) {
+          const json = await res.json().catch(() => null);
+          return showError((json && json.message) || `EduToon login failed (${res.status})`);
+        }
+        const data = await res.json();
+        // store token and redirect to home/dashboard
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          // optionally store user
+          localStorage.setItem('user', JSON.stringify(data.user || {}));
+          location.hash = '#/';
+        } else {
+          showError('EduToon login did not return a token');
+        }
+      } catch (err) {
+        showError(err.message || 'Network error');
+      }
+    });
+  </script>
 </body>
 </html>
