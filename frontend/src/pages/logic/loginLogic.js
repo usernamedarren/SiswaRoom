@@ -19,7 +19,7 @@ export async function initLogin(container) {
 
 function setupQuickLogin() {
   document.getElementById("quick-siswa").onclick = () => quickLogin("siswa1@sekolah.id", "password");
-  document.getElementById("quick-guru").onclick = () => quickLogin("guru1@sekolah.id", "password123");
+  document.getElementById("quick-guru").onclick = () => quickLogin("guru1@sekolah.id", "password");
 }
 
 async function quickLogin(email, password) {

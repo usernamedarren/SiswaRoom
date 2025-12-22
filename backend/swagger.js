@@ -51,7 +51,7 @@ export const swaggerSpec = {
           id: { type: 'integer', example: 1 },
           email: { type: 'string', example: 'user@example.com' },
           full_name: { type: 'string', example: 'John Doe' },
-          role: { type: 'string', enum: ['admin', 'teacher', 'student', 'guru', 'siswa'], example: 'student' },
+          role: { type: 'string', enum: ['guru', 'siswa', 'admin'], example: 'siswa' },
           created_at: { type: 'string', format: 'date-time' }
         }
       },
@@ -168,7 +168,7 @@ export const swaggerSpec = {
                   email: { type: 'string' },
                   password: { type: 'string' },
                   full_name: { type: 'string' },
-                  role: { type: 'string', enum: ['admin', 'teacher', 'student', 'guru', 'siswa'] }
+                  role: { type: 'string', enum: ['guru', 'siswa', 'admin'] }
                 }
               }
             }
