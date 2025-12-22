@@ -4,7 +4,8 @@ import {
   getLibraryItemById,
   createLibraryItem,
   updateLibraryItem,
-  deleteLibraryItem
+  deleteLibraryItem,
+  getEduToonChildrenBooks
 } from "../controllers/library.controller.js";
 
 const router = express.Router();
@@ -100,6 +101,9 @@ router.post("/", createLibraryItem);
  *               $ref: '#/components/schemas/LibraryItem'
  */
 router.get("/:id", getLibraryItemById);
+
+// EduToon: fetch children's books
+router.get('/edutoon/children', getEduToonChildrenBooks);
 
 /**
  * @swagger
