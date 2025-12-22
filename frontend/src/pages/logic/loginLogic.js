@@ -11,6 +11,7 @@ export async function initLogin(container) {
 
     setupForm();
     setupQuickLogin();
+    setupEduToonLogin();
 
   } catch {
     container.innerHTML = `<p class="center text-gray">Gagal memuat halaman login.</p>`;
@@ -89,4 +90,80 @@ async function submitLogin({ email, password }) {
     errorBox.style.display = "block";
     errorBox.textContent = "Terjadi kesalahan server.";
   }
+}
+
+// EduToon client-side login flow: call EduToon API directly using frontend config, then send user to backend to create/get local user
+import { EDUTOON_BASE, EDUTOON_TOKEN } from "../../utils/config.js";
+
+function setupEduToonLogin() {
+  const btn = document.getElementById('edutoon-login');
+  if (!btn) return;
+
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById("error-message");
+    errorBox.style.display = 'none';
+
+    if (!EDUTOON_BASE) {
+      errorBox.style.display = 'block';
+      errorBox.textContent = 'EduToon base URL not configured.';
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${EDUTOON_BASE}/api/auth/me`, {
+        headers: EDUTOON_TOKEN ? { Authorization: `Bearer ${EDUTOON_TOKEN}` } : {}
+      });
+
+      if (!resp.ok) {
+        const txt = await resp.text().catch(() => null);
+        errorBox.style.display = 'block';
+        errorBox.textContent = `EduToon request failed (${resp.status})` + (txt ? `: ${txt}` : '');
+        return;
+      }
+
+      const ed = await resp.json();
+      const email = ed.email || ed.data?.email || ed.user?.email;
+      const full_name = ed.full_name || ed.name || ed.data?.full_name || ed.user?.full_name || ed.fullname || ed.username || email;
+
+      if (!email) {
+        errorBox.style.display = 'block';
+        errorBox.textContent = 'EduToon response did not include an email.';
+        return;
+      }
+
+      // Send to backend to create/find local user and get local token
+      const loginRes = await fetch(`${API_BASE}/auth/edutoon`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, full_name })
+      });
+
+      const loginJson = await loginRes.json().catch(() => ({}));
+      if (!loginRes.ok) {
+        errorBox.style.display = 'block';
+        errorBox.textContent = loginJson.message || `Login failed (${loginRes.status})`;
+        return;
+      }
+
+      // Use returned token and user to set auth
+      const user = loginJson.user || {};
+      const normalizedUser = {
+        ...user,
+        full_name: user.full_name || user.name,
+        name: user.name || user.full_name || user.email,
+      };
+
+      AuthService.setAuth(loginJson.token, normalizedUser);
+      if (location.hash !== "#/") {
+        window.location.hash = "#/";
+      } else {
+        window.dispatchEvent(new Event('hashchange'));
+      }
+
+    } catch (err) {
+      errorBox.style.display = 'block';
+      errorBox.textContent = err.message || 'Network error.';
+    }
+  });
 }

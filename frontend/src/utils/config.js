@@ -8,7 +8,20 @@ const normalizedBase = (envBase && envBase.trim()) ? envBase.replace(/\/$/, "") 
 
 export const API_BASE = normalizedBase;
 
-// Expose globally so legacy modules using the global name keep working
+// EduToon integration config (for client-side flow)
+const edBase = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_EDUTOON_BASE_URL)
+  ? String(import.meta.env.VITE_EDUTOON_BASE_URL)
+  : "";
+export const EDUTOON_BASE = edBase ? edBase.replace(/\/$/, "") : "";
+
+// Token is optional; if set it will be sent from the client to the EduToon API
+export const EDUTOON_TOKEN = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_EDUTOON_TOKEN)
+  ? String(import.meta.env.VITE_EDUTOON_TOKEN)
+  : "";
+
+// Expose globally so legacy modules using the global names keep working
 if (typeof window !== "undefined") {
   window.API_BASE = API_BASE;
+  window.EDUTOON_BASE = EDUTOON_BASE;
+  window.EDUTOON_TOKEN = EDUTOON_TOKEN;
 }
