@@ -256,6 +256,11 @@ const MOCK_COURSE_DETAILS = {
 },
 };
 
+// ID video untuk fallback mata pelajaran "Lain-lain"
+const OTHER_VIDEO_ID = (typeof import.meta !== "undefined" && import.meta.env?.VITE_OTHER_VIDEO_ID)
+  ? String(import.meta.env.VITE_OTHER_VIDEO_ID)
+  : "lain101";
+
 export async function initCourse(container, courseId) {
   try {
     const html = await (await fetch(new URL("../static/course.html", import.meta.url))).text();
@@ -318,21 +323,37 @@ async function loadCourseData(courseId) {
 
   const headers = { ...AuthService.getAuthHeaders() };
 
-  const [courseRes, materialsRes, quizzesRes] = await Promise.all([
-    fetch(`${API_BASE}/courses/${courseId}`, { headers }),
-    fetch(`${API_BASE}/materials?course_id=${courseId}`, { headers }),
-    fetch(`${API_BASE}/quizzes?course_id=${courseId}`, { headers }),
-  ]);
+  const useOtherFallback = isOtherCourseId(courseId);
 
-  if (!courseRes.ok) {
-    throw new Error(`Failed to fetch course (${courseRes.status})`);
+  // Kebutuhan khusus: Lain-lain hanya ambil satu video dari API videos/{id}
+  if (useOtherFallback) {
+    return await loadOtherVideoCourse(courseId, headers);
   }
 
-  const courseRaw = await courseRes.json();
-  const materialsRaw = materialsRes.ok ? await materialsRes.json() : [];
-  const quizzesRaw = quizzesRes.ok ? await quizzesRes.json() : [];
+  try {
+    const [courseRes, materialsRes, quizzesRes] = await Promise.all([
+      fetch(`${API_BASE}/courses/${courseId}`, { headers }),
+      fetch(`${API_BASE}/materials?course_id=${courseId}`, { headers }),
+      fetch(`${API_BASE}/quizzes?course_id=${courseId}`, { headers }),
+    ]);
 
-  return normalizeCourse(courseRaw, materialsRaw, quizzesRaw);
+    if (!courseRes.ok) {
+      throw new Error(`Failed to fetch course (${courseRes.status})`);
+    }
+
+    const courseRaw = await courseRes.json();
+    const materialsRaw = materialsRes.ok ? await materialsRes.json() : [];
+    const quizzesRaw = quizzesRes.ok ? await quizzesRes.json() : [];
+
+    return normalizeCourse(courseRaw, materialsRaw, quizzesRaw);
+  } catch (err) {
+    // If course data tidak ada, coba fallback khusus Lain-lain ke endpoint video
+    if (useOtherFallback) {
+      console.warn("[COURSE] Fallback to video endpoint for Lain-lain:", courseId, err);
+      return await loadOtherVideoCourse(courseId, headers);
+    }
+    throw err;
+  }
 }
 
 function normalizeCourse(course, materials, quizzes) {
@@ -362,6 +383,47 @@ function mapQuiz(q) {
     id: q.id || q.quiz_id,
     title: q.title || q.name || "Quiz",
     question_count: q.total_questions || q.question_count || 0,
+  };
+}
+
+function isOtherCourseId(id) {
+  if (!id) return false;
+  const lower = String(id).toLowerCase();
+  return lower.includes("lain") || lower === String(OTHER_VIDEO_ID).toLowerCase();
+}
+
+async function loadOtherVideoCourse(courseId, headers = {}) {
+  const videoId = OTHER_VIDEO_ID || courseId;
+  const res = await fetch(`${API_BASE}/videos/${videoId}`, { headers });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch fallback video (${res.status})`);
+  }
+
+  const payload = await res.json();
+  const pointsRaw = payload.points || payload.key_points || [];
+  const points = Array.isArray(pointsRaw)
+    ? pointsRaw.map((p) => typeof p === "string" ? p : (p?.point_text || p?.text || p?.title)).filter(Boolean)
+    : [];
+
+  const videoUrl = payload.url || payload.video_url || payload.link || payload.videoLink || payload.video;
+  const description = payload.description || payload.summary || payload.caption || "Materi tambahan berbentuk video.";
+
+  return {
+    course_id: courseId,
+    course_name: payload.course_name || "Lain-Lain",
+    description,
+    teacher_name: payload.uploader || payload.author || payload.owner || "Pengajar Tamu",
+    materials: [
+      {
+        title: payload.title || payload.name || "Video Lain-lain",
+        description,
+        content: payload.content || description,
+        video: videoUrl,
+        points,
+      },
+    ],
+    quizzes: [],
   };
 }
 
