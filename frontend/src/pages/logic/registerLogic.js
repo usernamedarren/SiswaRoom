@@ -23,7 +23,7 @@ function setupRegisterForm() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const name = document.getElementById("name").value.trim();
+    const full_name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const confirm = document.getElementById("confirm-password").value;
@@ -35,7 +35,7 @@ function setupRegisterForm() {
     errorBox.style.display = "none";
     successBox.style.display = "none";
 
-    if (!name || !email || !password) {
+    if (!full_name || !email || !password) {
       errorBox.textContent = "Semua field wajib diisi.";
       errorBox.style.display = "block";
       return;
@@ -49,7 +49,7 @@ function setupRegisterForm() {
 
     // DEV: create dummy user locally and auto-login
     if (DUMMY_AUTH) {
-      const user = { name, email, role };
+      const user = { name: full_name, full_name, email, role };
       const token = 'dev-token-' + Math.random().toString(36).slice(2, 10);
       AuthService.setAuth(token, user);
       window.location.hash = '#/';
@@ -60,7 +60,8 @@ function setupRegisterForm() {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        // Backend expects: email, password, full_name, role ('guru'|'siswa'|'admin')
+        body: JSON.stringify({ email, password, full_name, role }),
       });
 
       const result = await res.json();
@@ -71,10 +72,20 @@ function setupRegisterForm() {
         return;
       }
 
-      successBox.style.display = "block";
-      successBox.textContent = "Registrasi berhasil! Anda dapat login sekarang.";
-
-      setTimeout(() => (window.location.hash = "#/login"), 1500);
+      // If backend returns token + user, auto-login; else show success message
+      if (result?.token && result?.user) {
+        const user = {
+          ...result.user,
+          full_name: result.user.full_name || full_name,
+          name: result.user.name || result.user.full_name || full_name || result.user.email,
+        };
+        AuthService.setAuth(result.token, user);
+        window.location.hash = '#/';
+      } else {
+        successBox.style.display = "block";
+        successBox.textContent = "Registrasi berhasil! Anda dapat login sekarang.";
+        setTimeout(() => (window.location.hash = "#/login"), 1500);
+      }
 
     } catch {
       errorBox.textContent = "Kesalahan server.";
