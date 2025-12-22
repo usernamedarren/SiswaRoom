@@ -76,7 +76,7 @@ async function renderTeacherByHash() {
 // ========= Page init =========
 export async function initTeacher(container) {
   const user = AuthService.getUser();
-  if (!user || !["teacher", "admin"].includes(user.role)) {
+  if (!user || !["teacher", "guru", "admin"].includes(user.role)) {
     container.innerHTML = `<p class="center text-gray">Access denied.</p>`;
     return;
   }
