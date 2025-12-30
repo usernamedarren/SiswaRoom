@@ -1,4 +1,5 @@
 import { AuthService } from "../utils/auth.js";
+import logoSiswaRoom from "../assets/logosiswaroom.jpg"
 
 export function Navbar() {
   const user = AuthService.getUser();
@@ -12,7 +13,7 @@ export function Navbar() {
 <header class="navbar">
   <div class="navbar-inner">
     <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
-      <img class="logo-img" src="/favicon.png" alt="SiswaRoom Logo" />
+      <img class="logo-img" src="${logoSiswaRoom}" alt="SiswaRoom Logo" />
       <span class="logo-text">SiswaRoom</span>
     </a>
 
@@ -54,7 +55,9 @@ export function Navbar() {
   return `
 <header class="navbar">
   <div class="navbar-inner">
-    <a href="#/teacher?tab=materi" class="logo">SiswaRoom</a>
+    <a href="#/" class="logo">
+      <img class="logo-img" src="${logoSiswaRoom}" alt="Logo" style="height: 30px; margin-right: 10px;">
+      SiswaRoom</a>
 
     <nav class="nav-center" id="nav-center">
       ${navItem("#/teacher?tab=materi", "Materi")}
