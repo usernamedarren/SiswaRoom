@@ -80,6 +80,32 @@ export const swaggerSpec = {
           updated_at: { type: 'string', format: 'date-time' }
         }
       },
+      QuizOption: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          question_id: { type: 'integer', example: 5 },
+          option_text: { type: 'string', example: 'Jawaban A' },
+          is_correct: { type: 'boolean', example: true },
+          sort_order: { type: 'integer', example: 1 },
+          created_at: { type: 'string', format: 'date-time' }
+        }
+      },
+      QuizQuestion: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 5 },
+          quiz_id: { type: 'integer', example: 3 },
+          question_text: { type: 'string', example: 'Apa ibukota Indonesia?' },
+          explanation: { type: 'string', example: 'Jakarta adalah ibu kota Indonesia' },
+          sort_order: { type: 'integer', example: 1 },
+          options: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/QuizOption' }
+          },
+          created_at: { type: 'string', format: 'date-time' }
+        }
+      },
       Quiz: {
         type: 'object',
         properties: {
@@ -90,6 +116,10 @@ export const swaggerSpec = {
           total_questions: { type: 'integer', example: 10 },
           duration_minutes: { type: 'integer', example: 15 },
           passing_score: { type: 'integer', example: 70 },
+          questions: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/QuizQuestion' }
+          },
           created_at: { type: 'string', format: 'date-time' }
         }
       },
@@ -404,7 +434,7 @@ export const swaggerSpec = {
       },
       post: {
         tags: ['Quizzes'],
-        summary: 'Buat kuis',
+        summary: 'Buat kuis dengan atau tanpa soal',
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -419,7 +449,33 @@ export const swaggerSpec = {
                   short_description: { type: 'string' },
                   total_questions: { type: 'integer', default: 0 },
                   duration_minutes: { type: 'integer', default: 10 },
-                  passing_score: { type: 'integer', default: 70 }
+                  passing_score: { type: 'integer', default: 70 },
+                  questions: {
+                    type: 'array',
+                    description: 'Optional: array of questions with options. Jika disediakan, soal akan dibuat secara bersamaan dengan kuis (transactional).',
+                    items: {
+                      type: 'object',
+                      required: ['question_text', 'options'],
+                      properties: {
+                        question_text: { type: 'string', example: 'Apa ibukota Indonesia?' },
+                        explanation: { type: 'string', example: 'Jakarta adalah ibu kota Indonesia' },
+                        sort_order: { type: 'integer', example: 1 },
+                        options: {
+                          type: 'array',
+                          minItems: 2,
+                          items: {
+                            type: 'object',
+                            required: ['option_text', 'is_correct'],
+                            properties: {
+                              option_text: { type: 'string', example: 'Jakarta' },
+                              is_correct: { type: 'boolean', example: true },
+                              sort_order: { type: 'integer', example: 1 }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -438,7 +494,7 @@ export const swaggerSpec = {
       },
       put: {
         tags: ['Quizzes'],
-        summary: 'Perbarui kuis',
+        summary: 'Perbarui kuis dan soal',
         security: [{ BearerAuth: [] }],
         parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'integer' } }],
         requestBody: {
@@ -452,7 +508,33 @@ export const swaggerSpec = {
                   short_description: { type: 'string' },
                   total_questions: { type: 'integer' },
                   duration_minutes: { type: 'integer' },
-                  passing_score: { type: 'integer' }
+                  passing_score: { type: 'integer' },
+                  questions: {
+                    type: 'array',
+                    description: 'Optional: array of questions dengan options. Jika disediakan, soal akan diupdate secara bersamaan (transactional).',
+                    items: {
+                      type: 'object',
+                      required: ['question_text', 'options'],
+                      properties: {
+                        question_text: { type: 'string', example: 'Apa ibukota Indonesia?' },
+                        explanation: { type: 'string', example: 'Jakarta adalah ibu kota Indonesia' },
+                        sort_order: { type: 'integer', example: 1 },
+                        options: {
+                          type: 'array',
+                          minItems: 2,
+                          items: {
+                            type: 'object',
+                            required: ['option_text', 'is_correct'],
+                            properties: {
+                              option_text: { type: 'string', example: 'Jakarta' },
+                              is_correct: { type: 'boolean', example: true },
+                              sort_order: { type: 'integer', example: 1 }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
