@@ -12,7 +12,7 @@ export function Navbar() {
 <header class="navbar">
   <div class="navbar-inner">
     <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
-      <img class="logo-img" src="/src/assets/logosiswaroom.jpg" alt="SiswaRoom Logo" />
+      <img class="logo-img" src="/assets/logosiswaroom.jpg" alt="SiswaRoom Logo" />
       <span class="logo-text">SiswaRoom</span>
     </a>
 
