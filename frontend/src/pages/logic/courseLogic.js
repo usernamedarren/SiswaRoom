@@ -225,6 +225,7 @@ const MOCK_COURSE_DETAILS = {
         title: "Mengenal Huruf & Membaca Awal",
         description: "Anak mulai mengenal alfabet dan mulai membaca kata sederhana",
         content: "Anak mengenal alfabet dan mulai membaca kata sederhana",
+        video: 'https://youtu.be/xgCCRfMLPjk?si=A9PLNSto2X5PE2_q',
         points: ["Huruf A-Z", "Bunyi huruf (fonik)", "Membaca kata pendek", "Tebak huruf dari gambar"],
       },
       {
@@ -243,7 +244,7 @@ const MOCK_COURSE_DETAILS = {
         title: "Pendidikan Karakter & Sosial",
         description: "Anak mulai mengenal nilai-nilai karakter dan interaksi sosial.",
         content: "Membentuk sikap baik sejak dini",
-        points: ["Sopan santun", "Jujur & berbagi", "Disiplin dan tanggung jawab", "Empati"],
+        points: ["Sopan santun", "Jujur & berbagi", "Disiplin dan tanggung jawab", "Empati "],
       },
     ],
     quizzes: [
