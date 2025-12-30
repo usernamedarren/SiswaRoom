@@ -13,6 +13,12 @@ const router = express.Router();
 // Apply authentication to all material routes
 router.use(authenticate);
 
+function ensureTeacher(req, res, next) {
+  const role = (req.user?.role || "").toLowerCase();
+  if (["teacher", "guru", "admin"].includes(role)) return next();
+  return res.status(403).json({ message: "Forbidden: Teacher or admin role required" });
+}
+
 /**
  * @swagger
  * /materials:
@@ -78,7 +84,7 @@ router.get("/", getMaterials);
  *                 material:
  *                   $ref: '#/components/schemas/Material'
  */
-router.post("/", createMaterial);
+router.post("/", ensureTeacher, createMaterial);
 
 /**
  * @swagger
@@ -137,7 +143,7 @@ router.get("/:id", getMaterialById);
  *       200:
  *         description: Material updated
  */
-router.put("/:id", updateMaterial);
+router.put("/:id", ensureTeacher, updateMaterial);
 
 /**
  * @swagger
@@ -157,6 +163,6 @@ router.put("/:id", updateMaterial);
  *       200:
  *         description: Material deleted
  */
-router.delete("/:id", deleteMaterial);
+router.delete("/:id", ensureTeacher, deleteMaterial);
 
 export default router;

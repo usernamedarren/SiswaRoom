@@ -1,4 +1,18 @@
 import * as MaterialService from "../services/material.service.js";
+import { db } from "../config/db.js";
+
+function roleIsAdmin(req) {
+  return (req.user?.role || "").toLowerCase() === "admin";
+}
+
+async function ensureTeacherOwnsCourse(req, courseId) {
+  if (!req.user?.id) return false;
+  const [rows] = await db.query(
+    "SELECT id FROM courses WHERE id = ? AND teacher_id = ?",
+    [courseId, req.user.id]
+  );
+  return rows.length > 0;
+}
 
 export async function getMaterials(req, res) {
   try {
@@ -39,8 +53,18 @@ export async function createMaterial(req, res) {
       return res.status(400).json({ message: "course_id and title are required" });
     }
 
+    const courseId = Number(course_id);
+    if (!courseId || Number.isNaN(courseId)) {
+      return res.status(400).json({ message: "course_id must be a valid number" });
+    }
+
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, courseId);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
+    }
+
     const materialId = await MaterialService.createNewMaterial(
-      course_id,
+      courseId,
       title,
       short_description,
       full_description,
@@ -62,6 +86,16 @@ export async function updateMaterial(req, res) {
     const { id } = req.params;
     const { title, short_description, full_description, video_url } = req.body;
 
+    const existing = await MaterialService.fetchMaterialById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Material not found" });
+    }
+
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, existing.course_id);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
+    }
+
     const success = await MaterialService.updateExistingMaterial(
       id,
       title,
@@ -69,9 +103,6 @@ export async function updateMaterial(req, res) {
       full_description,
       video_url
     );
-    if (!success) {
-      return res.status(404).json({ message: "Material not found" });
-    }
 
     const material = await MaterialService.fetchMaterialById(id);
     res.json({ message: "Material updated successfully", material });
@@ -84,10 +115,16 @@ export async function deleteMaterial(req, res) {
   try {
     const { id } = req.params;
 
-    const success = await MaterialService.deleteExistingMaterial(id);
-    if (!success) {
-      return res.status(404).json({ message: "Material not found" });
+    const existing = await MaterialService.fetchMaterialById(id);
+    if (!existing) return res.status(404).json({ message: "Material not found" });
+
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, existing.course_id);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
     }
+
+    const success = await MaterialService.deleteExistingMaterial(id);
+    if (!success) return res.status(404).json({ message: "Material not found" });
 
     res.json({ message: "Material deleted successfully" });
   } catch (err) {

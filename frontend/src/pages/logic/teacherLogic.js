@@ -215,7 +215,7 @@ window.showTeacherCreateMateri = function () {
 async function editMateri(id) {
   if (!id) return;
   const items = await fetchMateri();
-  const m = items.find(x => x.id === id);
+  const m = items.find(x => String(x.id ?? x._id ?? x.uuid) === String(id));
   if (!m) return alert("Materi tidak ditemukan.");
 
   const el = document.getElementById("teacher-materi-list");
@@ -653,7 +653,7 @@ window.showTeacherCreateQuiz = function () {
 async function editQuiz(id) {
   if (!id) return;
   const items = await fetchQuiz();
-  const q = items.find(x => x.id === id);
+  const q = items.find(x => String(x.id ?? x._id ?? x.uuid) === String(id));
   if (!q) return alert("Kuis tidak ditemukan.");
 
   const el = document.getElementById("teacher-quiz-list");
@@ -854,7 +854,7 @@ window.showTeacherCreateLibrary = function () {
 async function editLibrary(id) {
   if (!id) return;
   const items = await fetchLibraryItems();
-  const item = items.find(x => (x.id || x._id || x.uuid) === id);
+  const item = items.find(x => String(x.id ?? x._id ?? x.uuid) === String(id));
   if (!item) return alert("Library tidak ditemukan.");
 
   const el = document.getElementById("teacher-library-list");
