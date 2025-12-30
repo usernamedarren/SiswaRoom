@@ -7,8 +7,15 @@ import {
   deleteLibraryItem,
   getEduToonChildrenBooks
 } from "../controllers/library.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
+
+function ensureTeacher(req, res, next) {
+  const role = (req.user?.role || "").toLowerCase();
+  if (["teacher", "guru", "admin"].includes(role)) return next();
+  return res.status(403).json({ message: "Forbidden: Teacher or admin role required" });
+}
 
 /**
  * @swagger
@@ -35,6 +42,9 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/LibraryItem'
  */
 router.get("/", getLibraryItems);
+
+// EduToon: fetch children's books (public)
+router.get('/edutoon/children', getEduToonChildrenBooks);
 
 /**
  * @swagger
@@ -76,7 +86,7 @@ router.get("/", getLibraryItems);
  *                 item:
  *                   $ref: '#/components/schemas/LibraryItem'
  */
-router.post("/", createLibraryItem);
+router.post("/", authenticate, ensureTeacher, createLibraryItem);
 
 /**
  * @swagger
@@ -101,9 +111,6 @@ router.post("/", createLibraryItem);
  *               $ref: '#/components/schemas/LibraryItem'
  */
 router.get("/:id", getLibraryItemById);
-
-// EduToon: fetch children's books
-router.get('/edutoon/children', getEduToonChildrenBooks);
 
 /**
  * @swagger
@@ -139,7 +146,7 @@ router.get('/edutoon/children', getEduToonChildrenBooks);
  *       200:
  *         description: Library item updated
  */
-router.put("/:id", updateLibraryItem);
+router.put("/:id", authenticate, ensureTeacher, updateLibraryItem);
 
 /**
  * @swagger
@@ -159,6 +166,6 @@ router.put("/:id", updateLibraryItem);
  *       200:
  *         description: Library item deleted
  */
-router.delete("/:id", deleteLibraryItem);
+router.delete("/:id", authenticate, ensureTeacher, deleteLibraryItem);
 
 export default router;

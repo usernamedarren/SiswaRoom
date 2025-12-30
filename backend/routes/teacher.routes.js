@@ -138,6 +138,60 @@ router.get("/quizzes", ensureTeacher, async (req, res) => {
 
 /**
  * @swagger
+ * /teacher/library:
+ *   get:
+ *     summary: Get library items for current teacher courses
+ *     tags: [Teacher]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of library items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/LibraryItem'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - teacher role required
+ */
+router.get("/library", ensureTeacher, async (req, res) => {
+  try {
+    const connection = await db.getConnection();
+
+    const [courses] = await connection.query(
+      `SELECT id FROM courses WHERE teacher_id = ?`,
+      [req.user.id]
+    );
+
+    if (!courses.length) {
+      connection.release();
+      return res.json([]);
+    }
+
+    const courseIds = courses.map(c => c.id);
+    const placeholders = courseIds.map(() => '?').join(',');
+
+    const [items] = await connection.query(
+      `SELECT li.*, c.name AS course_name FROM library_items li
+       LEFT JOIN courses c ON li.course_id = c.id
+       WHERE li.course_id IN (${placeholders})
+       ORDER BY li.created_at DESC`,
+      courseIds
+    );
+
+    connection.release();
+    res.json(items || []);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch library items", error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /teacher/courses:
  *   get:
  *     summary: Get all courses created by current teacher

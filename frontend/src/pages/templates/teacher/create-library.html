@@ -1,0 +1,41 @@
+<div class="card fade-in-up">
+  <h3>Tambah Library</h3>
+
+  <div class="input-group">
+    <label>Pilih Kursus</label>
+    <select id="l-course" class="input">
+      <option value="">-- Pilih Kursus --</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="l-title" class="input" placeholder="Contoh: Modul Persamaan Linier" />
+  </div>
+
+  <div class="input-group">
+    <label>Tipe</label>
+    <select id="l-type" class="input">
+      <option value="">-- Pilih tipe --</option>
+      <option value="ebook">E-book</option>
+      <option value="pdf">PDF</option>
+      <option value="catatan">Catatan</option>
+      <option value="bank_soal">Bank Soal</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Singkat</label>
+    <input id="l-desc" class="input" placeholder="Ringkasan isi atau kegunaan" />
+  </div>
+
+  <div class="input-group">
+    <label>Link File</label>
+    <input id="l-url" class="input" placeholder="https://..." />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="l-save">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=library'">Batal</button>
+  </div>
+</div>

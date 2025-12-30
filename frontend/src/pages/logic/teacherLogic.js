@@ -4,6 +4,8 @@ import tplCreateMateri from "../templates/teacher/create-materi.html?raw";
 import tplEditMateri from "../templates/teacher/edit-materi.html?raw";
 import tplCreateQuiz from "../templates/teacher/create-quiz.html?raw";
 import tplEditQuiz from "../templates/teacher/edit-quiz.html?raw";
+import tplCreateLibrary from "../templates/teacher/create-library.html?raw";
+import tplEditLibrary from "../templates/teacher/edit-library.html?raw";
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -35,12 +37,13 @@ function getTeacherTabFromHash() {
   const params = new URLSearchParams(qs);
   const t = (params.get("tab") || "materi").toLowerCase();
   if (t === "kuis") return "kuis";
+  if (t === "library") return "library";
   return "materi";
 }
 
 function switchTab(tabName) {
   // show/hide hanya berdasarkan section wrapper
-  ["materi", "kuis"].forEach(t => {
+  ["materi", "kuis", "library"].forEach(t => {
     const el = document.getElementById(`tab-${t}`);
     if (el) el.style.display = (t === tabName) ? "block" : "none";
   });
@@ -56,6 +59,7 @@ async function renderTeacherByHash() {
 
   if (tab === "materi") await loadMateri();
   if (tab === "kuis") await loadQuiz();
+  if (tab === "library") await loadLibrary();
 }
 
 // ========= Page init =========
@@ -721,6 +725,210 @@ async function deleteQuiz(id) {
     await loadQuiz();
   } catch (err) {
     console.error("[TEACHER QUIZ] Delete error:", err);
+    alert("Error: " + err.message);
+  }
+}
+
+// ============================
+// Library
+// ============================
+async function fetchLibraryItems() {
+  try {
+    const res = await fetch(`${API_BASE}/teacher/library`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
+    }
+  } catch (err) {
+    console.error("[TEACHER LIBRARY] Fetch error:", err);
+  }
+  return [];
+}
+
+async function loadLibrary() {
+  const el = document.getElementById("teacher-library-list");
+  if (!el) return;
+
+  el.innerHTML = `<p class="center text-gray">Memuat...</p>`;
+
+  const items = await fetchLibraryItems();
+
+  if (!items.length) {
+    el.innerHTML = `<div class="center text-gray" style="padding:1rem;">Belum ada library. Klik <b>Tambah Library</b>.</div>`;
+    return;
+  }
+
+  const rows = items.map(item => {
+    const id = item.id || item._id || item.uuid;
+    const type = item.type || item.item_type;
+    return `
+      <tr data-id="${id}">
+        <td style="font-weight:700;">${escapeHtml(item.title || "-")}</td>
+        <td>${escapeHtml(item.course_name || "-")}</td>
+        <td>${escapeHtml(type || "-")}</td>
+        <td>${item.file_url ? `<a class="link" href="${escapeAttr(item.file_url)}" target="_blank" rel="noreferrer">Buka</a>` : `<span class="text-gray">-</span>`}</td>
+        <td style="white-space:nowrap; display:flex; gap:.5rem; flex-wrap:wrap;">
+          <button class="btn btn-secondary" data-action="edit">Edit</button>
+          <button class="btn" data-action="delete">Hapus</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  el.innerHTML = `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Judul</th>
+          <th>Kursus</th>
+          <th>Tipe</th>
+          <th>Link</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  el.querySelectorAll("[data-action='edit']").forEach(btn => {
+    btn.addEventListener("click", () => editLibrary(btn.closest("tr")?.dataset?.id));
+  });
+  el.querySelectorAll("[data-action='delete']").forEach(btn => {
+    btn.addEventListener("click", () => deleteLibrary(btn.closest("tr")?.dataset?.id));
+  });
+}
+
+window.showTeacherCreateLibrary = function () {
+  const el = document.getElementById("teacher-library-list");
+  if (!el) return;
+
+  el.innerHTML = tplCreateLibrary;
+
+  loadCoursesForDropdown("l-course");
+
+  document.getElementById("l-save").onclick = async () => {
+    const course_id = document.getElementById("l-course")?.value?.trim();
+    const title = document.getElementById("l-title")?.value?.trim();
+    const type = document.getElementById("l-type")?.value?.trim();
+    const short_description = document.getElementById("l-desc")?.value?.trim();
+    const file_url = document.getElementById("l-url")?.value?.trim();
+
+    if (!course_id) return alert("Pilih kursus terlebih dahulu.");
+    if (!title) return alert("Judul wajib.");
+    if (!type) return alert("Tipe wajib.");
+    if (!file_url) return alert("Link file wajib.");
+
+    try {
+      const res = await fetch(`${API_BASE}/library`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          course_id: parseInt(course_id),
+          title,
+          type,
+          short_description: short_description || "",
+          file_url
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal menambah library"}`);
+      }
+
+      alert("Library berhasil ditambahkan!");
+      await loadLibrary();
+    } catch (err) {
+      console.error("[TEACHER LIBRARY] Create error:", err);
+      alert("Error: " + err.message);
+    }
+  };
+};
+
+async function editLibrary(id) {
+  if (!id) return;
+  const items = await fetchLibraryItems();
+  const item = items.find(x => (x.id || x._id || x.uuid) === id);
+  if (!item) return alert("Library tidak ditemukan.");
+
+  const el = document.getElementById("teacher-library-list");
+  if (!el) return;
+
+  const type = item.type || item.item_type || "";
+  el.innerHTML = renderTemplate(tplEditLibrary, {
+    title: item.title || "",
+    short_description: item.short_description || "",
+    file_url: item.file_url || "",
+    selected_ebook: type === "ebook" ? "selected" : "",
+    selected_pdf: type === "pdf" ? "selected" : "",
+    selected_catatan: type === "catatan" ? "selected" : "",
+    selected_bank_soal: type === "bank_soal" ? "selected" : "",
+  });
+
+  document.getElementById("l-update").onclick = async () => {
+    const title = document.getElementById("l-title")?.value?.trim();
+    const typeUpdate = document.getElementById("l-type")?.value?.trim();
+    const short_description = document.getElementById("l-desc")?.value?.trim();
+    const file_url = document.getElementById("l-url")?.value?.trim();
+
+    if (!title) return alert("Judul wajib.");
+    if (!typeUpdate) return alert("Tipe wajib.");
+    if (!file_url) return alert("Link file wajib.");
+
+    try {
+      const res = await fetch(`${API_BASE}/library/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          title,
+          type: typeUpdate,
+          short_description: short_description || "",
+          file_url
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal mengubah library"}`);
+      }
+
+      alert("Library berhasil diubah!");
+      await loadLibrary();
+    } catch (err) {
+      console.error("[TEACHER LIBRARY] Update error:", err);
+      alert("Error: " + err.message);
+    }
+  };
+}
+
+async function deleteLibrary(id) {
+  if (!id) return;
+  if (!confirm("Hapus library ini?")) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/library/${id}`, {
+      method: "DELETE",
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      return alert(`Error: ${err.message || "Gagal menghapus library"}`);
+    }
+
+    alert("Library berhasil dihapus!");
+    await loadLibrary();
+  } catch (err) {
+    console.error("[TEACHER LIBRARY] Delete error:", err);
     alert("Error: " + err.message);
   }
 }
