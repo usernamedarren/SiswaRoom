@@ -93,14 +93,16 @@ export function Navbar() {
   // NON-TEACHER NAVBAR (student/admin)
   // tetap kayak punyamu, cuma admin panel pakai isAdmin
   // ============================
+// ============================
+  // NON-TEACHER NAVBAR (student/admin)
+  // ============================
   return `
 <header class="navbar">
   <div class="navbar-inner">
-    <div class="navbar-inner">
-      <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
+    <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
       <img class="logo-img" src="${logoSiswaRoom}" alt="SiswaRoom Logo" />
       <span class="logo-text">SiswaRoom</span>
-      </a>
+    </a>
 
     <nav class="nav-center" id="nav-center">
       ${navItem("#/", "Dashboard")}
