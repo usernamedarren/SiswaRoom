@@ -46,6 +46,11 @@ export async function createLibraryItem(req, res) {
       return res.status(400).json({ message: "title, type, course_id, and file_url are required" });
     }
 
+    const allowedTypes = ["ebook", "catatan", "bank_soal"];
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid type. Use ebook, catatan, or bank_soal" });
+    }
+
     const courseId = Number(course_id);
     if (!courseId || Number.isNaN(courseId)) {
       return res.status(400).json({ message: "course_id must be a valid number" });
@@ -79,6 +84,11 @@ export async function updateLibraryItem(req, res) {
   try {
     const { id } = req.params;
     const { title, type, short_description, file_url } = req.body;
+
+    const allowedTypes = ["ebook", "catatan", "bank_soal"];
+    if (type && !allowedTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid type. Use ebook, catatan, or bank_soal" });
+    }
 
     const existing = await LibraryService.fetchLibraryItemById(id);
     if (!existing) {
