@@ -87,3 +87,33 @@ export async function deleteLibraryItem(req, res) {
     res.status(500).json({ message: "Delete failed", error: err.message });
   }
 }
+
+/**
+ * GET /library/edutoon/children
+ * Return EduToon books targeted for children (category/tags/age filters)
+ */
+export async function getEduToonChildrenBooks(req, res) {
+  try {
+    const maxAge = Number(req.query.maxAge || req.query.max_age || 12);
+    const books = await LibraryService.fetchEduToonBooks();
+
+    const childKeywords = ['anak','anak-anak','children','kids','kid','balita'];
+    const filtered = (Array.isArray(books) ? books : []).filter(b => {
+      const cat = String(b.category || '').toLowerCase();
+      const title = String(b.title || b.name || '').toLowerCase();
+      const desc = String(b.short_description || b.description || '').toLowerCase();
+      const tagsStr = Array.isArray(b.tags) ? b.tags.join(' ').toLowerCase() : String(b.tags||'').toLowerCase();
+      const min_age = Number(b.min_age || b.minAge || 0);
+      const max_age = Number(b.max_age || b.maxAge || 0);
+
+      const keywordMatch = childKeywords.some(k => cat.includes(k) || title.includes(k) || desc.includes(k) || tagsStr.includes(k));
+      const ageMatch = (max_age && max_age <= maxAge) || (min_age && min_age <= maxAge) || (min_age === 0 && max_age === 0 && keywordMatch);
+
+      return keywordMatch || ageMatch;
+    });
+
+    res.json(filtered);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch EduToon children's books", error: err.message });
+  }
+}
