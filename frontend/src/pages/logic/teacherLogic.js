@@ -866,7 +866,6 @@ async function editLibrary(id) {
     short_description: item.short_description || "",
     file_url: item.file_url || "",
     selected_ebook: type === "ebook" ? "selected" : "",
-    selected_pdf: type === "pdf" ? "selected" : "",
     selected_catatan: type === "catatan" ? "selected" : "",
     selected_bank_soal: type === "bank_soal" ? "selected" : "",
   });

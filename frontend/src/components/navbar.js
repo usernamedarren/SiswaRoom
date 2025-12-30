@@ -23,9 +23,9 @@ function fill(template, map) {
 
 export function Navbar() {
   const user = AuthService.getUser();
-
-  const isAdmin = user?.role === "admin";
-  const isTeacher = user?.role === "teacher";
+  const role = (user?.role || "").toLowerCase();
+  const isAdmin = role === "admin";
+  const isTeacher = role === "teacher" || role === "guru";
 
   // Public navbar (before login)
   if (!user) {
