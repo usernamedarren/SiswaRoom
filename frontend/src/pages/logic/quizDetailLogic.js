@@ -222,7 +222,8 @@ export function initQuizDetail(quiz) {
       btn.className = "quiz-option";
       btn.type = "button";
       btn.textContent = opt.text;
-      btn.dataset.optionId = String(opt.id ?? opt.text);
+      const uniqueId = opt.id || `opt-${idx}-${oIdx}`;
+      btn.dataset.optionId = String(uniqueId);
       btn.addEventListener("click", () => {
         if (phase !== "answering") return;
         optsContainer.querySelectorAll(".quiz-option").forEach((b) => b.classList.remove("selected"));
@@ -393,8 +394,13 @@ export function initQuizDetail(quiz) {
       }
       const selectedId = selectedBtn.dataset.optionId;
       const current = QUIZ[idx];
-      const selectedOpt = current.options.find((o) => String(o.id ?? o.text) === selectedId) || { text: selectedBtn.textContent.trim(), isCorrect: false };
+      const selectedOpt = current.options.find((o, oIdx) => {
+        const uniqueId = o.id || `opt-${idx}-${oIdx}`;
+        return String(uniqueId) === selectedId;
+      });
 
+      if (!selectedOpt) return;
+      
       const isCorrect = !!selectedOpt.isCorrect;
       answers[idx] = selectedOpt.text;
 
