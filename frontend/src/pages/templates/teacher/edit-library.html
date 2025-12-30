@@ -1,0 +1,33 @@
+<div class="card fade-in-up">
+  <h3>Edit Library</h3>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="l-title" class="input" value="{{title}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Tipe</label>
+    <select id="l-type" class="input">
+      <option value="ebook" {{selected_ebook}}>E-book</option>
+      <option value="pdf" {{selected_pdf}}>PDF</option>
+      <option value="catatan" {{selected_catatan}}>Catatan</option>
+      <option value="bank_soal" {{selected_bank_soal}}>Bank Soal</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Singkat</label>
+    <input id="l-desc" class="input" value="{{short_description}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Link File</label>
+    <input id="l-url" class="input" value="{{file_url}}" />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="l-update">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=library'">Batal</button>
+  </div>
+</div>

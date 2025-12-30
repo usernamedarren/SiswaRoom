@@ -1,4 +1,18 @@
 import * as LibraryService from "../services/library.service.js";
+import { db } from "../config/db.js";
+
+function roleIsAdmin(req) {
+  return (req.user?.role || "").toLowerCase() === "admin";
+}
+
+async function ensureTeacherOwnsCourse(req, courseId) {
+  if (!req.user?.id) return false;
+  const [rows] = await db.query(
+    "SELECT id FROM courses WHERE id = ? AND teacher_id = ?",
+    [courseId, req.user.id]
+  );
+  return rows.length > 0;
+}
 
 export async function getLibraryItems(req, res) {
   try {
@@ -32,11 +46,22 @@ export async function createLibraryItem(req, res) {
       return res.status(400).json({ message: "title, type, course_id, and file_url are required" });
     }
 
+    const courseId = Number(course_id);
+    if (!courseId || Number.isNaN(courseId)) {
+      return res.status(400).json({ message: "course_id must be a valid number" });
+    }
+
+    const role = (req.user?.role || "").toLowerCase();
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, courseId);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
+    }
+
     const itemId = await LibraryService.createNewLibraryItem(
       title,
       type,
       short_description,
-      course_id,
+      courseId,
       file_url
     );
     const item = await LibraryService.fetchLibraryItemById(itemId);
@@ -55,6 +80,16 @@ export async function updateLibraryItem(req, res) {
     const { id } = req.params;
     const { title, type, short_description, file_url } = req.body;
 
+    const existing = await LibraryService.fetchLibraryItemById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Library item not found" });
+    }
+
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, existing.course_id);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
+    }
+
     const success = await LibraryService.updateExistingLibraryItem(
       id,
       title,
@@ -62,10 +97,6 @@ export async function updateLibraryItem(req, res) {
       short_description,
       file_url
     );
-    if (!success) {
-      return res.status(404).json({ message: "Library item not found" });
-    }
-
     const item = await LibraryService.fetchLibraryItemById(id);
     res.json({ message: "Library item updated successfully", item });
   } catch (err) {
@@ -77,10 +108,16 @@ export async function deleteLibraryItem(req, res) {
   try {
     const { id } = req.params;
 
-    const success = await LibraryService.deleteExistingLibraryItem(id);
-    if (!success) {
-      return res.status(404).json({ message: "Library item not found" });
+    const existing = await LibraryService.fetchLibraryItemById(id);
+    if (!existing) return res.status(404).json({ message: "Library item not found" });
+
+    if (req.user && !roleIsAdmin(req)) {
+      const ok = await ensureTeacherOwnsCourse(req, existing.course_id);
+      if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
     }
+
+    const success = await LibraryService.deleteExistingLibraryItem(id);
+    if (!success) return res.status(404).json({ message: "Library item not found" });
 
     res.json({ message: "Library item deleted successfully" });
   } catch (err) {

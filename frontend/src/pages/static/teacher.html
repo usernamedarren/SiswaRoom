@@ -13,11 +13,12 @@
       <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
         <div>
           <h1>Guru Panel</h1>
-          <p>Kelola materi dan kuis untuk kelas Anda.</p>
+          <p>Kelola materi, kuis, dan library untuk kelas Anda.</p>
         </div>
         <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary" onclick="showTeacherCreateMateri()">+ Materi</button>
           <button class="btn btn-primary" onclick="showTeacherCreateQuiz()">+ Kuis</button>
+          <button class="btn btn-outline" onclick="showTeacherCreateLibrary()">+ Library</button>
         </div>
       </div>
     </div>
@@ -50,6 +51,21 @@
         </div>
 
         <div id="teacher-quiz-list" style="margin-top:1rem;">
+          <p class="center text-gray">Memuat...</p>
+        </div>
+      </section>
+
+      <!-- TAB: LIBRARY -->
+      <section id="tab-library" style="display:none;">
+        <div class="section-head">
+          <div>
+            <h3 style="margin-bottom:.25rem;">Library</h3>
+            <p class="text-gray" style="margin:0;">Unggah atau tautkan bahan ajar pendukung.</p>
+          </div>
+          <button class="btn btn-primary" onclick="showTeacherCreateLibrary()">+ Tambah Library</button>
+        </div>
+
+        <div id="teacher-library-list" style="margin-top:1rem;">
           <p class="center text-gray">Memuat...</p>
         </div>
       </section>
