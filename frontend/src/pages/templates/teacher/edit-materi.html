@@ -1,0 +1,28 @@
+<div class="card fade-in-up">
+  <h3>Edit Materi</h3>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="m-title" class="input" value="{{title}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Singkat</label>
+    <input id="m-short-desc" class="input" value="{{short_description}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Lengkap</label>
+    <textarea id="m-full-desc" class="input" style="min-height:100px;">{{full_description}}</textarea>
+  </div>
+
+  <div class="input-group">
+    <label>Link Video</label>
+    <input id="m-video-url" class="input" value="{{video_url}}" />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="m-update">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=materi'">Batal</button>
+  </div>
+</div>

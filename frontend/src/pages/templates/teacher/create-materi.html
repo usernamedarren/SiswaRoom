@@ -1,0 +1,35 @@
+<div class="card fade-in-up">
+  <h3>Tambah Materi</h3>
+
+  <div class="input-group">
+    <label>Pilih Kursus</label>
+    <select id="m-course" class="input">
+      <option value="">-- Pilih Kursus --</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="m-title" class="input" placeholder="Contoh: Persamaan Kuadrat" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Singkat</label>
+    <input id="m-short-desc" class="input" placeholder="Ringkas aja" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi Lengkap</label>
+    <textarea id="m-full-desc" class="input" placeholder="Penjelasan detail materi..." style="min-height:100px;"></textarea>
+  </div>
+
+  <div class="input-group">
+    <label>Link Video (opsional)</label>
+    <input id="m-video-url" class="input" placeholder="https://..." />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="m-save">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=materi'">Batal</button>
+  </div>
+</div>

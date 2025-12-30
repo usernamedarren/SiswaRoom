@@ -1,5 +1,25 @@
 import { AuthService } from "../utils/auth.js";
-import logoSiswaRoom from "../assets/logosiswaroom.jpg"
+import logoSiswaRoom from "../assets/logosiswaroom.jpg";
+import navbarPublicTpl from "./templates/navbar-public.html?raw";
+import navbarTeacherTpl from "./templates/navbar-teacher.html?raw";
+import navbarDefaultTpl from "./templates/navbar-default.html?raw";
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function fill(template, map) {
+  let html = template;
+  Object.entries(map || {}).forEach(([k, v]) => {
+    html = html.replaceAll(k, v ?? "");
+  });
+  return html;
+}
 
 export function Navbar() {
   const user = AuthService.getUser();
@@ -9,42 +29,7 @@ export function Navbar() {
 
   // Public navbar (before login)
   if (!user) {
-    return `
-<header class="navbar">
-  <div class="navbar-inner">
-    <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
-      <img class="logo-img" src="${logoSiswaRoom}" alt="SiswaRoom Logo" />
-      <span class="logo-text">SiswaRoom</span>
-    </a>
-
-    <nav class="nav-center" id="nav-center">
-      <a href="#/" class="nav-item" onclick="goHomeAndScroll('top')">Home</a>
-      <a href="#/cara-kerja" class="nav-item" onclick="goHomeAndScroll('features')">Cara Kerja</a>
-      <a href="#/mata-pelajaran" class="nav-item" onclick="goHomeAndScroll('how')">Mata Pelajaran</a>
-      <a href="#/librarypublic" class="nav-item" onclick="goHomeAndScroll('how')">Library</a>
-      <a href="#/quizpublic" class="nav-item" onclick="goHomeAndScroll('how')">Quiz</a>
-      <span class="nav-indicator" id="nav-indicator"></span>
-    </nav>
-
-    <div class="nav-right">
-      <a href="#/login" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Masuk</a>
-      <a href="#/register" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center;">Daftar</a>
-    </div>
-
-    <button class="mobile-toggle"
-      onmouseenter="openMobileMenu()"
-      onclick="openMobileMenu()">☰</button>
-  </div>
-
-  <div class="mobile-menu" id="mobile-menu" onmouseleave="closeMobileMenu()">
-    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('top'); closeMobileMenu();">Beranda</button>
-    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('features'); closeMobileMenu();">Fitur</button>
-    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('how'); closeMobileMenu();">Cara Kerja</button>
-    <button type="button" class="mobile-item btn" onclick="location.hash='#/login'; closeMobileMenu();">Masuk</button>
-    <button type="button" class="mobile-item btn" onclick="location.hash='#/register'; closeMobileMenu();">Daftar</button>
-  </div>
-</header>
-`;
+    return fill(navbarPublicTpl, { "__LOGO__": logoSiswaRoom });
   }
 
   // ============================
@@ -52,91 +37,25 @@ export function Navbar() {
   // cuma Guru Panel + userBox + Keluar
   // ============================
   if (isTeacher) {
-  return `
-<header class="navbar">
-  <div class="navbar-inner">
-    <a href="#/" class="logo">
-      <img class="logo-img" src="${logoSiswaRoom}" alt="Logo" style="height: 30px; margin-right: 10px;">
-      SiswaRoom</a>
-
-    <nav class="nav-center" id="nav-center">
-      ${navItem("#/teacher?tab=materi", "Materi")}
-      ${navItem("#/teacher?tab=video", "Video")}
-      ${navItem("#/teacher?tab=kuis", "Kuis")}
-      <span class="nav-indicator" id="nav-indicator"></span>
-    </nav>
-
-    <div class="nav-right">
-      ${userBox(user)}
-      ${logoutButton()}
-    </div>
-
-    <button class="mobile-toggle"
-      onmouseenter="openMobileMenu()"
-      onclick="openMobileMenu()">☰</button>
-  </div>
-
-  <div class="mobile-menu" id="mobile-menu"
-       onmouseleave="closeMobileMenu()">
-    ${mobileItem("#/teacher?tab=materi", "Materi")}
-    ${mobileItem("#/teacher?tab=video", "Video")}
-    ${mobileItem("#/teacher?tab=kuis", "Kuis")}
-    ${userBox(user)}
-    ${logoutButton(true)}
-  </div>
-</header>
-`;
-}
-
+    return fill(navbarTeacherTpl, {
+      "__LOGO__": logoSiswaRoom,
+      "__USER_BOX__": userBox(user),
+      "__LOGOUT__": logoutButton(),
+      "__LOGOUT_MOBILE__": logoutButton(true)
+    });
+  }
 
   // ============================
   // NON-TEACHER NAVBAR (student/admin)
-  // tetap kayak punyamu, cuma admin panel pakai isAdmin
   // ============================
-// ============================
-  // NON-TEACHER NAVBAR (student/admin)
-  // ============================
-  return `
-<header class="navbar">
-  <div class="navbar-inner">
-    <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
-      <img class="logo-img" src="${logoSiswaRoom}" alt="SiswaRoom Logo" />
-      <span class="logo-text">SiswaRoom</span>
-    </a>
-
-    <nav class="nav-center" id="nav-center">
-      ${navItem("#/", "Dashboard")}
-      ${navItem("#/courses", "Mata Pelajaran")}
-      ${navItem("#/library", "Library")}
-      ${navItem("#/kuis", "Quiz")}
-      ${isAdmin ? navItem("#/admin", "Admin Panel") : ""}
-      <span class="nav-indicator" id="nav-indicator"></span>
-    </nav>
-
-    <div class="nav-right">
-      ${userBox(user)}
-      ${logoutButton()}
-    </div>
-
-    <button class="mobile-toggle"
-      onmouseenter="openMobileMenu()"
-      onclick="openMobileMenu()">☰</button>
-  </div>
-
-  <div class="mobile-menu" id="mobile-menu"
-       onmouseleave="closeMobileMenu()">
-    ${mobileItem("#/", "Dashboard")}
-    ${mobileItem("#/profile", "Profil")}
-    ${mobileItem("#/library", "Library")}
-    ${mobileItem("#/courses", "Mata Pelajaran")}
-    ${mobileItem("#/jadwal", "Jadwal")}
-    ${mobileItem("#/kuis", "Quiz")}
-    ${isAdmin ? mobileItem("#/admin", "Admin Panel") : ""}
-    ${userBox(user)}
-    ${logoutButton(true)}
-  </div>
-</header>
-`;
+  return fill(navbarDefaultTpl, {
+    "__LOGO__": logoSiswaRoom,
+    "__USER_BOX__": userBox(user),
+    "__LOGOUT__": logoutButton(),
+    "__LOGOUT_MOBILE__": logoutButton(true),
+    "__ADMIN_ITEM__": isAdmin ? navItem("#/admin", "Admin Panel") : "",
+    "__ADMIN_MOBILE__": isAdmin ? mobileItem("#/admin", "Admin Panel") : ""
+  });
 }
 
 export function initNavIndicator() {
@@ -306,7 +225,7 @@ window.goHomeAndScroll = (target = 'top') => {
 
 function userBox(user) {
   if (!user) return `<a href="#/login" class="btn btn-login">Masuk</a>`;
-  const displayName = user.name || user.full_name || user.email;
+  const displayName = escapeHtml(user.name || user.full_name || user.email);
   return `
     <a class="nav-user" id="nav-user" href="#/profile" title="Lihat profil">
       <span class="user-avatar">👤</span>
@@ -328,8 +247,10 @@ function logoutButton(isMobile = false) {
 }
 
 function mobileItem(href, label) {
+  const safeHref = escapeHtml(href);
+  const safeLabel = escapeHtml(label);
   return `
-    <button type="button" class="mobile-item btn" data-nav="${href}" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='${href}'; closeMobileMenu();">${label}</button>
+    <button type="button" class="mobile-item btn" data-nav="${safeHref}" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='${safeHref}'; closeMobileMenu();">${safeLabel}</button>
   `;
 }
 

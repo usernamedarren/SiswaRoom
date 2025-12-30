@@ -11,6 +11,14 @@ import { db } from "../config/db.js";
 
 const router = express.Router();
 
+function ensureTeacherOrAdmin(req, res, next) {
+  const role = req.user?.role?.toLowerCase() || "";
+  if (!["admin", "teacher", "guru"].includes(role)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  next();
+}
+
 /**
  * @swagger
  * /courses/mine:
@@ -118,7 +126,7 @@ router.get("/", getCourses);
  *                 course:
  *                   $ref: '#/components/schemas/Course'
  */
-router.post("/", createCourse);
+router.post("/", authenticate, ensureTeacherOrAdmin, createCourse);
 
 /**
  * @swagger
@@ -175,7 +183,7 @@ router.get("/:id", getCourseById);
  *       200:
  *         description: Course updated
  */
-router.put("/:id", updateCourse);
+router.put("/:id", authenticate, ensureTeacherOrAdmin, updateCourse);
 
 /**
  * @swagger
@@ -195,6 +203,6 @@ router.put("/:id", updateCourse);
  *       200:
  *         description: Course deleted
  */
-router.delete("/:id", deleteCourse);
+router.delete("/:id", authenticate, ensureTeacherOrAdmin, deleteCourse);
 
 export default router;

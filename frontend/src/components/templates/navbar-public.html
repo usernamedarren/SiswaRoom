@@ -1,0 +1,32 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
+      <img class="logo-img" src="__LOGO__" alt="SiswaRoom Logo" />
+      <span class="logo-text">SiswaRoom</span>
+    </a>
+
+    <nav class="nav-center" id="nav-center">
+      <a href="#/" class="nav-item" onclick="goHomeAndScroll('top')">Home</a>
+      <a href="#/cara-kerja" class="nav-item" onclick="goHomeAndScroll('features')">Cara Kerja</a>
+      <a href="#/mata-pelajaran" class="nav-item" onclick="goHomeAndScroll('how')">Mata Pelajaran</a>
+      <a href="#/librarypublic" class="nav-item" onclick="goHomeAndScroll('how')">Library</a>
+      <a href="#/quizpublic" class="nav-item" onclick="goHomeAndScroll('how')">Quiz</a>
+      <span class="nav-indicator" id="nav-indicator"></span>
+    </nav>
+
+    <div class="nav-right">
+      <a href="#/login" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Masuk</a>
+      <a href="#/register" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center;">Daftar</a>
+    </div>
+
+    <button class="mobile-toggle" onmouseenter="openMobileMenu()" onclick="openMobileMenu()">☰</button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" onmouseleave="closeMobileMenu()">
+    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('top'); closeMobileMenu();">Beranda</button>
+    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('features'); closeMobileMenu();">Fitur</button>
+    <button type="button" class="mobile-item btn" onclick="goHomeAndScroll('how'); closeMobileMenu();">Cara Kerja</button>
+    <button type="button" class="mobile-item btn" onclick="location.hash='#/login'; closeMobileMenu();">Masuk</button>
+    <button type="button" class="mobile-item btn" onclick="location.hash='#/register'; closeMobileMenu();">Daftar</button>
+  </div>
+</header>
