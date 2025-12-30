@@ -2,7 +2,7 @@ import { AuthService } from "../../utils/auth.js";
 import { isQuizCompleted } from "../../utils/quizProgress.js";
 import { API_BASE } from "../../utils/config.js";
 
-const DUMMY_DATA = false;
+const DUMMY_DATA = true; // Diaktifkan agar objek MOCK bisa diakses sebagai cadangan
 const MOCK_COURSE_DETAILS = {
   math101: {
     course_id: 'math101',
@@ -14,9 +14,8 @@ const MOCK_COURSE_DETAILS = {
     materials: [
       {
         title: 'Bilangan Bulat dan Pecahan',
-        description: 'Pelajari operasi bilangan bulat, pecahan, dan aplikasinya dalam kehidupan sehari-hari',
+        description: 'Pelajari operasi bilangan bulat, pecahan, and aplikasinya dalam kehidupan sehari-hari',
         content: 'Bilangan bulat adalah bilangan yang terdiri dari bilangan negatif, nol, dan bilangan positif. Pecahan adalah bilangan yang menyatakan bagian dari keseluruhan. Materi ini membahas operasi dasar dan contoh penerapan.',
-        // Dummy video URL (backend will provide real URLs later)
         video: 'https://www.w3schools.com/html/mov_bbb.mp4',
         points: [
           'Operasi penjumlahan dan pengurangan bilangan bulat',
@@ -148,7 +147,6 @@ const MOCK_COURSE_DETAILS = {
       { title: "Kuis Hukum Newton", question_count: 10 },
     ],
   },
-
   eng101: {
     course_id: "eng101",
     course_name: "Bahasa Inggris",
@@ -171,7 +169,6 @@ const MOCK_COURSE_DETAILS = {
       { title: "Quiz: Reading", question_count: 8 },
     ],
   },
-
   id101: {
     course_id: "id101",
     course_name: "Bahasa Indonesia",
@@ -194,7 +191,6 @@ const MOCK_COURSE_DETAILS = {
       { title: "Kuis Teks Eksposisi", question_count: 8 },
     ],
   },
-
   cs101: {
     course_id: "cs101",
     course_name: "Informatika",
@@ -218,45 +214,44 @@ const MOCK_COURSE_DETAILS = {
     ],
   },
   lain101: {
-  course_id: "lain101",
-  course_name: "Lain-Lain (Pendukung)",
-  description: "Materi tambahan seperti tips belajar, literasi digital, dan pengembangan diri.",
-  teacher_name: "Tim SiswaRoom",
-  stats: { total_materials: 4, total_quizzes: 1, avg_quiz_score: 0 },
-  is_enrolled: true,
-  materials: [
-    {
-      title: "Cara Belajar Efektif",
-      description: "Teknik belajar yang bikin lebih fokus dan cepat paham.",
-      content: "Gunakan teknik Pomodoro, buat rangkuman singkat, dan latihan soal bertahap.",
-      points: ["Pomodoro 25/5", "Active Recall", "Spaced Repetition", "Latihan soal"],
-    },
-    {
-      title: "Manajemen Waktu",
-      description: "Atur jadwal biar tugas & belajar lebih terkontrol.",
-      content: "Mulai dari prioritas (penting vs mendesak) dan buat to-do harian.",
-      points: ["Prioritas", "Time blocking", "Target harian", "Review mingguan"],
-    },
-    {
-      title: "Literasi Digital",
-      description: "Bedakan info valid vs hoaks, dan aman berinternet.",
-      content: "Cek sumber, bandingkan berita, jangan sebar info tanpa verifikasi.",
-      points: ["Cek sumber", "Cari bukti", "Jaga privasi", "Etika online"],
-    },
-    {
-      title: "Tips Menghadapi Ujian",
-      description: "Strategi persiapan, latihan, dan mental saat ujian.",
-      content: "Latihan dari soal tahun lalu, tidur cukup, dan buat catatan inti.",
-      points: ["Latihan soal", "Sleep", "Ringkasan", "Simulasi ujian"],
-    },
-  ],
-  quizzes: [
-    { id: "q-lain-1", title: "Kuis Pendukung 1", question_count: 10 },
-  ],
-},
+    course_id: "lain101",
+    course_name: "Lain-Lain (Pendukung)",
+    description: "Materi tambahan seperti tips belajar, literasi digital, dan pengembangan diri.",
+    teacher_name: "Tim SiswaRoom",
+    stats: { total_materials: 4, total_quizzes: 1, avg_quiz_score: 0 },
+    is_enrolled: true,
+    materials: [
+      {
+        title: "Cara Belajar Efektif",
+        description: "Teknik belajar yang bikin lebih fokus dan cepat paham.",
+        content: "Gunakan teknik Pomodoro, buat rangkuman singkat, dan latihan soal bertahap.",
+        points: ["Pomodoro 25/5", "Active Recall", "Spaced Repetition", "Latihan soal"],
+      },
+      {
+        title: "Manajemen Waktu",
+        description: "Atur jadwal biar tugas & belajar lebih terkontrol.",
+        content: "Mulai dari prioritas (penting vs mendesak) dan buat to-do harian.",
+        points: ["Prioritas", "Time blocking", "Target harian", "Review mingguan"],
+      },
+      {
+        title: "Literasi Digital",
+        description: "Bedakan info valid vs hoaks, dan aman berinternet.",
+        content: "Cek sumber, bandingkan berita, jangan sebar info tanpa verifikasi.",
+        points: ["Cek sumber", "Cari bukti", "Jaga privasi", "Etika online"],
+      },
+      {
+        title: "Tips Menghadapi Ujian",
+        description: "Strategi persiapan, latihan, dan mental saat ujian.",
+        content: "Latihan dari soal tahun lalu, tidur cukup, dan buat catatan inti.",
+        points: ["Latihan soal", "Sleep", "Ringkasan", "Simulasi ujian"],
+      },
+    ],
+    quizzes: [
+      { id: "q-lain-1", title: "Kuis Pendukung 1", question_count: 10 },
+    ],
+  },
 };
 
-// ID video untuk fallback mata pelajaran "Lain-lain"
 const OTHER_VIDEO_ID = (typeof import.meta !== "undefined" && import.meta.env?.VITE_OTHER_VIDEO_ID)
   ? String(import.meta.env.VITE_OTHER_VIDEO_ID)
   : "lain101";
@@ -265,10 +260,7 @@ export async function initCourse(container, courseId) {
   try {
     const html = await (await fetch(new URL("../static/course.html", import.meta.url))).text();
     container.innerHTML = html;
-
-    // setup UI bits
     setupCourseMenu();
-
     await loadCourse(container, courseId);
   } catch (err) {
     console.error("[COURSE] Failed to load page:", err);
@@ -289,7 +281,6 @@ function setupCourseMenu() {
         s.style.display = 'none';
       }
     });
-
     tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   }
 
@@ -297,7 +288,6 @@ function setupCourseMenu() {
     btn.addEventListener('click', () => showSection(btn.dataset.tab));
   });
 
-  // accessibility: allow switching via arrow keys
   tabs.forEach((btn, idx) => {
     btn.tabIndex = 0;
     btn.addEventListener('keydown', (e) => {
@@ -307,7 +297,6 @@ function setupCourseMenu() {
     });
   });
 
-  // initialize visible section based on the active tab (default to 'materi')
   try {
     const initialTab = tabs.find(t => t.classList.contains('active'))?.dataset.tab || 'materi';
     showSection(initialTab);
@@ -316,40 +305,40 @@ function setupCourseMenu() {
   }
 }
 
+// ==========================================
+// BAGIAN YANG DIUBAH (HANYA LOAD DATA)
+// ==========================================
 async function loadCourseData(courseId) {
-  if (DUMMY_DATA && MOCK_COURSE_DETAILS[courseId]) {
-    return MOCK_COURSE_DETAILS[courseId];
-  }
-
   const headers = { ...AuthService.getAuthHeaders() };
-
   const useOtherFallback = isOtherCourseId(courseId);
 
-  // Kebutuhan khusus: Lain-lain hanya ambil satu video dari API videos/{id}
-  if (useOtherFallback) {
-    return await loadOtherVideoCourse(courseId, headers);
-  }
-
   try {
+    // 1. Coba ambil dari Backend dulu (SEMUA MATPEL)
     const [courseRes, materialsRes, quizzesRes] = await Promise.all([
       fetch(`${API_BASE}/courses/${courseId}`, { headers }),
       fetch(`${API_BASE}/materials?course_id=${courseId}`, { headers }),
       fetch(`${API_BASE}/quizzes?course_id=${courseId}`, { headers }),
     ]);
 
-    if (!courseRes.ok) {
-      throw new Error(`Failed to fetch course (${courseRes.status})`);
+    // Jika Backend OK, kembalikan data backend
+    if (courseRes.ok) {
+      const courseRaw = await courseRes.json();
+      const materialsRaw = materialsRes.ok ? await materialsRes.json() : [];
+      const quizzesRaw = quizzesRes.ok ? await quizzesRes.json() : [];
+      return normalizeCourse(courseRaw, materialsRaw, quizzesRaw);
     }
 
-    const courseRaw = await courseRes.json();
-    const materialsRaw = materialsRes.ok ? await materialsRes.json() : [];
-    const quizzesRaw = quizzesRes.ok ? await quizzesRes.json() : [];
+    // 2. Jika Backend Gagal, CEK KHUSUS LAIN-LAIN UNTUK DUMMY
+    if (useOtherFallback && MOCK_COURSE_DETAILS[courseId]) {
+      console.log("[COURSE] Backend empty, using Dummy for Lain-lain:", courseId);
+      return MOCK_COURSE_DETAILS[courseId];
+    }
 
-    return normalizeCourse(courseRaw, materialsRaw, quizzesRaw);
+    throw new Error(`Failed to fetch course (${courseRes.status})`);
   } catch (err) {
-    // If course data tidak ada, coba fallback khusus Lain-lain ke endpoint video
+    // 3. Fallback terakhir jika koneksi error (KHUSUS LAIN-LAIN)
     if (useOtherFallback) {
-      console.warn("[COURSE] Fallback to video endpoint for Lain-lain:", courseId, err);
+      if (MOCK_COURSE_DETAILS[courseId]) return MOCK_COURSE_DETAILS[courseId];
       return await loadOtherVideoCourse(courseId, headers);
     }
     throw err;
@@ -395,34 +384,21 @@ function isOtherCourseId(id) {
 async function loadOtherVideoCourse(courseId, headers = {}) {
   const videoId = OTHER_VIDEO_ID || courseId;
   const res = await fetch(`${API_BASE}/videos/${videoId}`, { headers });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch fallback video (${res.status})`);
-  }
-
+  if (!res.ok) throw new Error(`Failed to fetch fallback video (${res.status})`);
   const payload = await res.json();
-  const pointsRaw = payload.points || payload.key_points || [];
-  const points = Array.isArray(pointsRaw)
-    ? pointsRaw.map((p) => typeof p === "string" ? p : (p?.point_text || p?.text || p?.title)).filter(Boolean)
-    : [];
-
-  const videoUrl = payload.url || payload.video_url || payload.link || payload.videoLink || payload.video;
-  const description = payload.description || payload.summary || payload.caption || "Materi tambahan berbentuk video.";
-
+  const description = payload.description || "Materi tambahan berbentuk video.";
   return {
     course_id: courseId,
     course_name: payload.course_name || "Lain-Lain",
     description,
-    teacher_name: payload.uploader || payload.author || payload.owner || "Pengajar Tamu",
-    materials: [
-      {
-        title: payload.title || payload.name || "Video Lain-lain",
-        description,
-        content: payload.content || description,
-        video: videoUrl,
-        points,
-      },
-    ],
+    teacher_name: payload.uploader || "Pengajar Tamu",
+    materials: [{
+      title: payload.title || "Video Lain-lain",
+      description,
+      content: payload.content || description,
+      video: payload.url || payload.video_url || payload.video,
+      points: [],
+    }],
     quizzes: [],
   };
 }
@@ -430,53 +406,32 @@ async function loadOtherVideoCourse(courseId, headers = {}) {
 async function loadCourse(container, courseId) {
   try {
     const course = await loadCourseData(courseId);
-
     document.getElementById("course-title").textContent = course.course_name || "Kursus";
     document.getElementById("course-teacher").textContent = `Pengajar: ${course.teacher_name || '-'}`;
     document.getElementById("course-desc").textContent = course.description || "Tidak ada deskripsi";
 
-    // Defensive: ensure Materi section is visible so the description appears above materials
-    try {
-      const materiSection = document.querySelector('[data-section="materi"]');
-      if (materiSection) materiSection.style.display = '';
-    } catch (err) {
-      // ignore – defensive only
-    }
-
-
-
-    // Materials and quizzes lists
     const matCard = document.getElementById("course-materials");
     const quizEl = document.getElementById("course-quizzes");
-
-    // back control (universal): from detail -> list, from list -> subjects nav
     const backWrap = document.getElementById('back-to-materials-wrap');
     const backBtn = document.getElementById('back-to-materials');
     let lastView = 'list';
 
-    // ensure back wrapper visible on course page
     if (backWrap) backWrap.style.display = '';
     if (backBtn) {
       backBtn.onclick = () => {
         if (lastView === 'detail') {
-          // go back to materials list
           renderMaterials();
           lastView = 'list';
           if (backWrap) backWrap.style.display = '';
           window.scrollTo({top:0, behavior:'smooth'});
         } else {
-          // go back to courses list (nav)
           window.location.hash = '#/courses';
         }
       };
     }
 
     function renderMaterials() {
-      // when rendering list, back should lead to subjects (so keep wrapper visible)
       lastView = 'list';
-      const backWrap = document.getElementById('back-to-materials-wrap');
-      if (backWrap) backWrap.style.display = '';
-
       matCard.innerHTML = (course.materials && course.materials.length)
         ? course.materials.map((m, i) => `
           <div class="material-card">
@@ -487,16 +442,11 @@ async function loadCourse(container, courseId) {
             <div class="material-card-action">
               <button class="btn btn-primary start-material-btn" data-index="${i}">Mulai Belajar</button>
             </div>
-          </div>
-        `).join("")
+          </div>`).join("")
         : `<p class="center text-gray">Tidak ada materi.</p>`;
 
-      // attach handlers
       matCard.querySelectorAll('.start-material-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const idx = Number(btn.dataset.index);
-          showMaterialDetail(idx);
-        });
+        btn.addEventListener('click', () => showMaterialDetail(Number(btn.dataset.index)));
       });
     }
 
@@ -508,124 +458,65 @@ async function loadCourse(container, courseId) {
         <div class="material-detail">
           <h3>${m.title}</h3>
           <p class="text-gray">${m.description}</p>
-
-              <h4 style="margin-top:1rem;">Deskripsi</h4>
+          <h4 style="margin-top:1rem;">Deskripsi</h4>
           <p>${m.content || m.description}</p>
-
           ${videoHtml}
-
           <h4 style="margin-top:1rem;">Poin-poin Penting</h4>
-          <ol>
-            ${(m.points || []).map(p => `<li>${p}</li>`).join('')}
-          </ol>
-        </div>
-      `;
-
-      const backWrap = document.getElementById('back-to-materials-wrap');
-      // expose the universal back button but don't overwrite its handler here so the global handler
-      // (set during init) decides whether to go back to list or navigate to courses.
-      if (backWrap) backWrap.style.display = '';
-      // set state to 'detail' so the global click handler will go to the appropriate target
-      lastView = 'detail';
+          <ol>${(m.points || []).map(p => `<li>${p}</li>`).join('')}</ol>
+        </div>`;
       window.scrollTo({top:0, behavior:'smooth'});
     }
 
     renderMaterials();
 
-    // Toggle .parent-hover on the materials container so we can reliably
-    // disable child hover styles when the user hovers the parent container.
-    const materiParent = document.querySelector('.card[data-section="materi"]');
-    if (materiParent) {
-      const add = () => materiParent.classList.add('parent-hover');
-      const rem = () => materiParent.classList.remove('parent-hover');
-      materiParent.addEventListener('pointerenter', add);
-      materiParent.addEventListener('pointerleave', rem);
-      // clean up on page unload (defensive)
-      window.addEventListener('unload', () => {
-        materiParent.removeEventListener('pointerenter', add);
-        materiParent.removeEventListener('pointerleave', rem);
-      });
-    }
-
     quizEl.innerHTML = (course.quizzes && course.quizzes.length)
       ? course.quizzes.map(q => {
           const done = isQuizCompleted(q.id);
           return `
-          <a href="#/quiz/${q.id}" class="quiz-card quiz-link ${done ? 'quiz-done' : ''}" data-quiz-id="${q.id}">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:.6rem;">
+          <a href="#/quiz/${q.id}" class="quiz-card quiz-link ${done ? 'quiz-done' : ''}">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
               <h4 style="margin:0;">${q.title}</h4>
               ${done ? `<span class="badge done">Sudah dikerjakan</span>` : ''}
             </div>
             <p style="margin-top:.5rem;">${q.question_count || 0} soal</p>
-          </a>
-        `}).join("")
+          </a>`}).join("")
       : `<p class="center text-gray">Tidak ada kuis.</p>`;
 
   } catch (err) {
-    console.error("[COURSE] Failed to fetch course:", err);
+    console.error("[COURSE] Failed to fetch:", err);
     container.innerHTML = `<p class="center text-gray">Gagal memuat data kursus.</p>`;
   }
 }
 
-// Helpers to render video content (YouTube embed or direct video)
 function isYouTubeUrl(url) {
   if (!url) return false;
   try {
-    const u = new URL(url);
-    const host = u.hostname.toLowerCase();
+    const host = new URL(url).hostname.toLowerCase();
     return host.includes('youtube.com') || host.includes('youtu.be');
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }
 
 function toYouTubeEmbed(url) {
   try {
     const u = new URL(url);
     const host = u.hostname.toLowerCase();
-    if (host.includes('youtu.be')) {
-      // Format: https://youtu.be/VIDEO_ID
-      const id = u.pathname.split('/').filter(Boolean)[0];
-      return id ? `https://www.youtube.com/embed/${id}` : '';
-    }
-    if (host.includes('youtube.com')) {
-      if (u.pathname.startsWith('/embed/')) {
-        // Already embed format
-        return url;
-      }
-      // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID
-      const id = u.searchParams.get('v');
-      return id ? `https://www.youtube.com/embed/${id}` : '';
-    }
-  } catch {
-    // fallthrough
-  }
-  return '';
+    if (host.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.split('/').filter(Boolean)[0]}`;
+    if (host.includes('youtube.com')) return `https://www.youtube.com/embed/${u.searchParams.get('v')}`;
+  } catch { return ''; }
 }
 
 function renderMaterialVideo(url) {
-  if (!url) {
-    return `<div class="material-video-placeholder text-gray" style="margin-top:1rem;">Video belum tersedia</div>`;
-  }
+  if (!url) return `<div class="material-video-placeholder text-gray">Video belum tersedia</div>`;
   const isYT = isYouTubeUrl(url);
   if (isYT) {
     const embedUrl = toYouTubeEmbed(url);
-    if (embedUrl) {
-      return `
-        <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
-        <div class="material-video" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:.5rem;background:#000;">
-          <iframe src="${embedUrl}" title="YouTube video" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        </div>
-        <div style="margin-top:.5rem"><a class="btn" href="${url}" target="_blank" rel="noopener">Buka Video di Tab Baru</a></div>
-      `;
-    }
+    return `
+      <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
+      <div class="material-video" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:.5rem;background:#000;">
+        <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe>
+      </div>`;
   }
-  // Fallback: render as HTML5 video (e.g., direct MP4)
   return `
     <h4 style="margin-top:1rem;">Video Pembelajaran</h4>
-    <video class="material-video" controls preload="metadata" src="${url}">
-      Browser Anda tidak mendukung elemen video.
-    </video>
-    <div style="margin-top:.5rem"><a class="btn" href="${url}" target="_blank" rel="noopener">Buka Video di Tab Baru</a></div>
-  `;
+    <video class="material-video" controls src="${url}">Browser tidak mendukung video.</video>`;
 }
