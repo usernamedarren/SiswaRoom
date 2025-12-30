@@ -26,11 +26,20 @@ export async function createCourse(req, res) {
   try {
     const { name, description, teacher_id } = req.body;
 
-    if (!name || !teacher_id) {
-      return res.status(400).json({ message: "Name and teacher_id are required" });
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
     }
 
-    const courseId = await CourseService.createNewCourse(name, description, teacher_id);
+    const role = req.user?.role?.toLowerCase() || "";
+    const teacherId = ["teacher", "guru"].includes(role)
+      ? req.user.id
+      : teacher_id || req.user?.id;
+
+    if (!teacherId) {
+      return res.status(400).json({ message: "teacher_id is required" });
+    }
+
+    const courseId = await CourseService.createNewCourse(name, description, teacherId);
     const course = await CourseService.fetchCourseById(courseId);
 
     res.status(201).json({
@@ -47,6 +56,16 @@ export async function updateCourse(req, res) {
     const { id } = req.params;
     const { name, description } = req.body;
 
+    const existing = await CourseService.fetchCourseById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const role = req.user?.role?.toLowerCase() || "";
+    if (["teacher", "guru"].includes(role) && existing.teacher_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     const success = await CourseService.updateExistingCourse(id, name, description);
     if (!success) {
       return res.status(404).json({ message: "Course not found" });
@@ -62,6 +81,16 @@ export async function updateCourse(req, res) {
 export async function deleteCourse(req, res) {
   try {
     const { id } = req.params;
+
+    const existing = await CourseService.fetchCourseById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const role = req.user?.role?.toLowerCase() || "";
+    if (["teacher", "guru"].includes(role) && existing.teacher_id !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     const success = await CourseService.deleteExistingCourse(id);
     if (!success) {

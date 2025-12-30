@@ -1,0 +1,27 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <a href="#/" class="logo">
+      <img class="logo-img" src="__LOGO__" alt="Logo" style="height: 30px; margin-right: 10px;">
+      SiswaRoom</a>
+
+    <nav class="nav-center" id="nav-center">
+      <a href="#/teacher?tab=materi" class="nav-item">Materi</a>
+      <a href="#/teacher?tab=kuis" class="nav-item">Kuis</a>
+      <span class="nav-indicator" id="nav-indicator"></span>
+    </nav>
+
+    <div class="nav-right">
+      __USER_BOX__
+      __LOGOUT__
+    </div>
+
+    <button class="mobile-toggle" onmouseenter="openMobileMenu()" onclick="openMobileMenu()">☰</button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" onmouseleave="closeMobileMenu()">
+    <button type="button" class="mobile-item btn" data-nav="#/teacher?tab=materi" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/teacher?tab=materi'; closeMobileMenu();">Materi</button>
+    <button type="button" class="mobile-item btn" data-nav="#/teacher?tab=kuis" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/teacher?tab=kuis'; closeMobileMenu();">Kuis</button>
+    __USER_BOX__
+    __LOGOUT_MOBILE__
+  </div>
+</header>

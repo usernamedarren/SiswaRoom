@@ -1,0 +1,33 @@
+<div class="card fade-in-up">
+  <h3>Edit Kuis</h3>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="q-title" class="input" value="{{title}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi</label>
+    <input id="q-desc" class="input" value="{{short_description}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Jumlah Soal</label>
+    <input id="q-total" class="input" type="number" value="{{total_questions}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Durasi (menit)</label>
+    <input id="q-duration" class="input" type="number" value="{{duration_minutes}}" />
+  </div>
+
+  <div class="input-group">
+    <label>Nilai Kelulusan</label>
+    <input id="q-passing" class="input" type="number" value="{{passing_score}}" />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="q-update">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=kuis'">Batal</button>
+  </div>
+</div>

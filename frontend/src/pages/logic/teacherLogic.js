@@ -1,5 +1,9 @@
 import { AuthService } from "../../utils/auth.js";
 import { API_BASE } from "../../utils/config.js";
+import tplCreateMateri from "../templates/teacher/create-materi.html?raw";
+import tplEditMateri from "../templates/teacher/edit-materi.html?raw";
+import tplCreateQuiz from "../templates/teacher/create-quiz.html?raw";
+import tplEditQuiz from "../templates/teacher/edit-quiz.html?raw";
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -15,20 +19,28 @@ function truncate(str, n = 80) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
 
+function renderTemplate(raw, replacements = {}) {
+  let html = raw;
+  Object.entries(replacements).forEach(([k, v]) => {
+    const safe = escapeAttr(String(v ?? ""));
+    html = html.replaceAll(`{{${k}}}`, safe);
+  });
+  return html;
+}
+
 // ========= Tab helper =========
 function getTeacherTabFromHash() {
   const hash = location.hash || "#/teacher?tab=materi";
   const qs = hash.split("?")[1] || "";
   const params = new URLSearchParams(qs);
   const t = (params.get("tab") || "materi").toLowerCase();
-  if (t === "video") return "video";
   if (t === "kuis") return "kuis";
   return "materi";
 }
 
 function switchTab(tabName) {
   // show/hide hanya berdasarkan section wrapper
-  ["materi", "video", "kuis"].forEach(t => {
+  ["materi", "kuis"].forEach(t => {
     const el = document.getElementById(`tab-${t}`);
     if (el) el.style.display = (t === tabName) ? "block" : "none";
   });
@@ -43,7 +55,6 @@ async function renderTeacherByHash() {
   switchTab(tab);
 
   if (tab === "materi") await loadMateri();
-  if (tab === "video") await loadVideo();
   if (tab === "kuis") await loadQuiz();
 }
 
@@ -152,43 +163,7 @@ window.showTeacherCreateMateri = function () {
   const el = document.getElementById("teacher-materi-list");
   if (!el) return;
 
-  el.innerHTML = `
-    <div class="card fade-in-up">
-      <h3>Tambah Materi</h3>
-
-      <div class="input-group">
-        <label>Pilih Kursus</label>
-        <select id="m-course" class="input">
-          <option value="">-- Pilih Kursus --</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Judul</label>
-        <input id="m-title" class="input" placeholder="Contoh: Persamaan Kuadrat" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi Singkat</label>
-        <input id="m-short-desc" class="input" placeholder="Ringkas aja" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi Lengkap</label>
-        <textarea id="m-full-desc" class="input" placeholder="Penjelasan detail materi..." style="min-height:100px;"></textarea>
-      </div>
-
-      <div class="input-group">
-        <label>Link Video (opsional)</label>
-        <input id="m-video-url" class="input" placeholder="https://..." />
-      </div>
-
-      <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
-        <button class="btn btn-primary" id="m-save">Simpan</button>
-        <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=materi'">Batal</button>
-      </div>
-    </div>
-  `;
+  el.innerHTML = tplCreateMateri;
 
   // Load courses for dropdown
   loadCoursesForDropdown("m-course");
@@ -242,36 +217,12 @@ async function editMateri(id) {
   const el = document.getElementById("teacher-materi-list");
   if (!el) return;
 
-  el.innerHTML = `
-    <div class="card fade-in-up">
-      <h3>Edit Materi</h3>
-
-      <div class="input-group">
-        <label>Judul</label>
-        <input id="m-title" class="input" value="${escapeAttr(m.title || "")}" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi Singkat</label>
-        <input id="m-short-desc" class="input" value="${escapeAttr(m.short_description || "")}" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi Lengkap</label>
-        <textarea id="m-full-desc" class="input" style="min-height:100px;">${escapeHtml(m.full_description || "")}</textarea>
-      </div>
-
-      <div class="input-group">
-        <label>Link Video</label>
-        <input id="m-video-url" class="input" value="${escapeAttr(m.video_url || "")}" />
-      </div>
-
-      <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
-        <button class="btn btn-primary" id="m-update">Simpan</button>
-        <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=materi'">Batal</button>
-      </div>
-    </div>
-  `;
+  el.innerHTML = renderTemplate(tplEditMateri, {
+    title: m.title || "",
+    short_description: m.short_description || "",
+    full_description: m.full_description || "",
+    video_url: m.video_url || "",
+  });
 
   document.getElementById("m-update").onclick = async () => {
     const title = document.getElementById("m-title")?.value?.trim();
@@ -649,48 +600,7 @@ window.showTeacherCreateQuiz = function () {
   const el = document.getElementById("teacher-quiz-list");
   if (!el) return;
 
-  el.innerHTML = `
-    <div class="card fade-in-up">
-      <h3>Tambah Kuis</h3>
-
-      <div class="input-group">
-        <label>Pilih Kursus</label>
-        <select id="q-course" class="input">
-          <option value="">-- Pilih Kursus --</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Judul</label>
-        <input id="q-title" class="input" placeholder="Contoh: Kuis Bab 1" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="q-desc" class="input" placeholder="Misal: 10 soal pilihan ganda" />
-      </div>
-
-      <div class="input-group">
-        <label>Jumlah Soal</label>
-        <input id="q-total" class="input" type="number" placeholder="10" value="10" />
-      </div>
-
-      <div class="input-group">
-        <label>Durasi (menit)</label>
-        <input id="q-duration" class="input" type="number" placeholder="15" value="15" />
-      </div>
-
-      <div class="input-group">
-        <label>Nilai Kelulusan</label>
-        <input id="q-passing" class="input" type="number" placeholder="70" value="70" />
-      </div>
-
-      <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
-        <button class="btn btn-primary" id="q-save">Simpan</button>
-        <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=kuis'">Batal</button>
-      </div>
-    </div>
-  `;
+  el.innerHTML = tplCreateQuiz;
 
   loadCoursesForDropdown("q-course");
 
@@ -745,41 +655,13 @@ async function editQuiz(id) {
   const el = document.getElementById("teacher-quiz-list");
   if (!el) return;
 
-  el.innerHTML = `
-    <div class="card fade-in-up">
-      <h3>Edit Kuis</h3>
-
-      <div class="input-group">
-        <label>Judul</label>
-        <input id="q-title" class="input" value="${escapeAttr(q.title || "")}" />
-      </div>
-
-      <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="q-desc" class="input" value="${escapeAttr(q.short_description || "")}" />
-      </div>
-
-      <div class="input-group">
-        <label>Jumlah Soal</label>
-        <input id="q-total" class="input" type="number" value="${q.total_questions || 10}" />
-      </div>
-
-      <div class="input-group">
-        <label>Durasi (menit)</label>
-        <input id="q-duration" class="input" type="number" value="${q.duration_minutes || 15}" />
-      </div>
-
-      <div class="input-group">
-        <label>Nilai Kelulusan</label>
-        <input id="q-passing" class="input" type="number" value="${q.passing_score || 70}" />
-      </div>
-
-      <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
-        <button class="btn btn-primary" id="q-update">Simpan</button>
-        <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=kuis'">Batal</button>
-      </div>
-    </div>
-  `;
+  el.innerHTML = renderTemplate(tplEditQuiz, {
+    title: q.title || "",
+    short_description: q.short_description || "",
+    total_questions: q.total_questions ?? 10,
+    duration_minutes: q.duration_minutes ?? 15,
+    passing_score: q.passing_score ?? 70,
+  });
 
   document.getElementById("q-update").onclick = async () => {
     const title = document.getElementById("q-title")?.value?.trim();

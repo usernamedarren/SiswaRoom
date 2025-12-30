@@ -1,0 +1,40 @@
+<div class="card fade-in-up">
+  <h3>Tambah Kuis</h3>
+
+  <div class="input-group">
+    <label>Pilih Kursus</label>
+    <select id="q-course" class="input">
+      <option value="">-- Pilih Kursus --</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Judul</label>
+    <input id="q-title" class="input" placeholder="Contoh: Kuis Bab 1" />
+  </div>
+
+  <div class="input-group">
+    <label>Deskripsi</label>
+    <input id="q-desc" class="input" placeholder="Misal: 10 soal pilihan ganda" />
+  </div>
+
+  <div class="input-group">
+    <label>Jumlah Soal</label>
+    <input id="q-total" class="input" type="number" placeholder="10" value="10" />
+  </div>
+
+  <div class="input-group">
+    <label>Durasi (menit)</label>
+    <input id="q-duration" class="input" type="number" placeholder="15" value="15" />
+  </div>
+
+  <div class="input-group">
+    <label>Nilai Kelulusan</label>
+    <input id="q-passing" class="input" type="number" placeholder="70" value="70" />
+  </div>
+
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
+    <button class="btn btn-primary" id="q-save">Simpan</button>
+    <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=kuis'">Batal</button>
+  </div>
+</div>

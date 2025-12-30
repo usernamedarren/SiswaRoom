@@ -10,8 +10,16 @@
 <body class="dark">
   <div class="container fade-in-up">
     <div class="page-header">
-      <h1>Guru Panel</h1>
-      <p>Tambah materi, video, dan kuis untuk siswa kamu.</p>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <h1>Guru Panel</h1>
+          <p>Kelola materi dan kuis untuk kelas Anda.</p>
+        </div>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="showTeacherCreateMateri()">+ Materi</button>
+          <button class="btn btn-primary" onclick="showTeacherCreateQuiz()">+ Kuis</button>
+        </div>
+      </div>
     </div>
 
     <div class="card admin-content">
@@ -27,21 +35,6 @@
         </div>
 
         <div id="teacher-materi-list" style="margin-top:1rem;">
-          <p class="center text-gray">Memuat...</p>
-        </div>
-      </section>
-
-      <!-- TAB: VIDEO -->
-      <section id="tab-video" style="display:none;">
-        <div class="section-head">
-          <div>
-            <h3 style="margin-bottom:.25rem;">Video</h3>
-            <p class="text-gray" style="margin:0;">Masukkan video pembelajaran (YouTube/Drive link).</p>
-          </div>
-          <button class="btn btn-primary" onclick="showTeacherCreateVideo()">+ Tambah Video</button>
-        </div>
-
-        <div id="teacher-video-list" style="margin-top:1rem;">
           <p class="center text-gray">Memuat...</p>
         </div>
       </section>
