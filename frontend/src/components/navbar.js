@@ -96,7 +96,11 @@ export function Navbar() {
   return `
 <header class="navbar">
   <div class="navbar-inner">
-    <a href="#/" class="logo">SiswaRoom</a>
+    <div class="navbar-inner">
+      <a href="#/" class="logo logo-wrap" onclick="goHomeAndScroll('top')">
+      <img class="logo-img" src="${logoSiswaRoom}" alt="SiswaRoom Logo" />
+      <span class="logo-text">SiswaRoom</span>
+      </a>
 
     <nav class="nav-center" id="nav-center">
       ${navItem("#/", "Dashboard")}
