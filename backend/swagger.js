@@ -26,6 +26,7 @@ export const swaggerSpec = {
     { name: 'Quizzes', description: 'Bank kuis per kursus' },
     { name: 'Quiz Attempts', description: 'Pengerjaan dan penilaian kuis' },
     { name: 'Library', description: 'Sumber belajar tambahan' },
+    { name: 'Teacher', description: 'Dashboard dan manajemen guru' },
     { name: 'Health', description: 'Status layanan' }
   ],
   components: {
@@ -632,6 +633,65 @@ export const swaggerSpec = {
         security: [{ BearerAuth: [] }],
         parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'integer' } }],
         responses: { 200: { description: 'Dihapus' } }
+      }
+    },
+    '/teacher/materials': {
+      get: {
+        tags: ['Teacher'],
+        summary: 'Daftar materi milik guru saat ini',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'OK', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Material' } } } } },
+          403: { description: 'Forbidden' }
+        }
+      }
+    },
+    '/teacher/quizzes': {
+      get: {
+        tags: ['Teacher'],
+        summary: 'Daftar kuis milik guru saat ini',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'OK', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Quiz' } } } } },
+          403: { description: 'Forbidden' }
+        }
+      }
+    },
+    '/teacher/courses': {
+      get: {
+        tags: ['Teacher'],
+        summary: 'Daftar kursus yang diajar guru saat ini',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'OK', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Course' } } } } },
+          403: { description: 'Forbidden' }
+        }
+      }
+    },
+    '/teacher/stats': {
+      get: {
+        tags: ['Teacher'],
+        summary: 'Statistik dashboard guru',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    total_courses: { type: 'integer', example: 3 },
+                    total_materials: { type: 'integer', example: 15 },
+                    total_quizzes: { type: 'integer', example: 8 },
+                    total_students: { type: 'integer', example: 45 }
+                  }
+                }
+              }
+            }
+          },
+          403: { description: 'Forbidden' }
+        }
       }
     },
     '/health': {

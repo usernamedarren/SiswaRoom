@@ -12,6 +12,7 @@ import quizAttemptRoutes from "./routes/quiz-attempt.routes.js";
 import libraryRoutes from "./routes/library.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import activityRoutes from "./routes/activity.routes.js";
+import teacherRoutes from "./routes/teacher.routes.js";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use("/api/quiz-attempts", quizAttemptRoutes);
 app.use("/api/library", libraryRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/activity", activityRoutes);
+app.use("/api/teacher", teacherRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
