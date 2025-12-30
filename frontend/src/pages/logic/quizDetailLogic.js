@@ -2,6 +2,17 @@ import { AuthService } from "../../utils/auth.js";
 import { API_BASE } from "../../utils/config.js";
 
 const FALLBACK_BANK = {
+  "q-lain-1": {
+    title: "Kuis Materi EduToon",
+    questions: [
+      {
+        question: "Huruf apakah yang ada di awal ibu?",
+        options: ["B", "I", "U", "A"],
+        answer: "I",
+        explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
+      }
+    ]
+  },
   q1: {
     title: "Bilangan Bulat",
     questions: [
@@ -46,6 +57,13 @@ export async function initQuizDetailPage(container, quizId) {
 }
 
 async function fetchQuizData(quizId) {
+// 1. CEK DULU: Jika quizId adalah kuis 'Lain-lain', ambil langsung dari FE
+  if (quizId.startsWith('q-lain') || quizId.includes('lain')) {
+    console.log("[QUIZ] Mengambil kuis Lain-lain langsung dari Frontend (FE)");
+    const fallback = FALLBACK_BANK[quizId] || FALLBACK_BANK.default;
+    return normalizeQuiz(fallback, quizId, true);
+  }
+
   try {
     const res = await fetch(`${API_BASE}/quizzes/${quizId}`, {
       headers: { ...AuthService.getAuthHeaders() },
