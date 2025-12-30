@@ -109,3 +109,61 @@ export async function getOptionById(id) {
   const [rows] = await db.query("SELECT * FROM quiz_options WHERE id = ?", [id]);
   return rows[0] || null;
 }
+
+// Update question
+export async function updateQuestion(id, questionText, explanation, sortOrder) {
+  const [result] = await db.query(
+    "UPDATE quiz_questions SET question_text = ?, explanation = ?, sort_order = ? WHERE id = ?",
+    [questionText, explanation || "", sortOrder, id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function updateQuestionTx(conn, id, questionText, explanation, sortOrder) {
+  const [result] = await conn.query(
+    "UPDATE quiz_questions SET question_text = ?, explanation = ?, sort_order = ? WHERE id = ?",
+    [questionText, explanation || "", sortOrder, id]
+  );
+  return result.affectedRows > 0;
+}
+
+// Delete question (cascade deletes options)
+export async function deleteQuestion(id) {
+  await db.query("DELETE FROM quiz_options WHERE question_id = ?", [id]);
+  const [result] = await db.query("DELETE FROM quiz_questions WHERE id = ?", [id]);
+  return result.affectedRows > 0;
+}
+
+export async function deleteQuestionTx(conn, id) {
+  await conn.query("DELETE FROM quiz_options WHERE question_id = ?", [id]);
+  const [result] = await conn.query("DELETE FROM quiz_questions WHERE id = ?", [id]);
+  return result.affectedRows > 0;
+}
+
+// Update option
+export async function updateOption(id, optionText, isCorrect, sortOrder) {
+  const [result] = await db.query(
+    "UPDATE quiz_options SET option_text = ?, is_correct = ?, sort_order = ? WHERE id = ?",
+    [optionText, isCorrect ? 1 : 0, sortOrder, id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function updateOptionTx(conn, id, optionText, isCorrect, sortOrder) {
+  const [result] = await conn.query(
+    "UPDATE quiz_options SET option_text = ?, is_correct = ?, sort_order = ? WHERE id = ?",
+    [optionText, isCorrect ? 1 : 0, sortOrder, id]
+  );
+  return result.affectedRows > 0;
+}
+
+// Delete option
+export async function deleteOption(id) {
+  const [result] = await db.query("DELETE FROM quiz_options WHERE id = ?", [id]);
+  return result.affectedRows > 0;
+}
+
+export async function deleteOptionTx(conn, id) {
+  const [result] = await conn.query("DELETE FROM quiz_options WHERE id = ?", [id]);
+  return result.affectedRows > 0;
+}

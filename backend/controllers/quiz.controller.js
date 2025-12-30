@@ -117,7 +117,7 @@ export async function createQuiz(req, res) {
 export async function updateQuiz(req, res) {
   try {
     const { id } = req.params;
-    const { title, short_description, total_questions, duration_minutes, passing_score } = req.body;
+    const { title, short_description, total_questions, duration_minutes, passing_score, questions } = req.body;
 
     const existing = await QuizService.fetchQuizById(id);
     if (!existing) {
@@ -129,14 +129,39 @@ export async function updateQuiz(req, res) {
       if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
     }
 
-    const success = await QuizService.updateExistingQuiz(
-      id,
-      title,
-      short_description,
-      total_questions,
-      duration_minutes,
-      passing_score
-    );
+    // If questions provided, use transactional update; otherwise update metadata only
+    if (Array.isArray(questions) && questions.length > 0) {
+      // Validate questions
+      const invalid = questions.find(q => {
+        const hasText = q.question_text && String(q.question_text).trim();
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const hasEnoughOpts = opts.length >= 2;
+        const hasCorrect = opts.some(o => o.is_correct);
+        return !hasText || !hasEnoughOpts || !hasCorrect;
+      });
+      if (invalid) {
+        return res.status(400).json({ message: "Each question must have text, at least 2 options, and 1 correct answer" });
+      }
+
+      await QuizService.updateQuizWithQuestions(id, {
+        title,
+        short_description: short_description || "",
+        duration_minutes,
+        passing_score,
+        questions
+      });
+    } else {
+      // Just update metadata
+      await QuizService.updateExistingQuiz(
+        id,
+        title,
+        short_description,
+        total_questions,
+        duration_minutes,
+        passing_score
+      );
+    }
+
     const quiz = await QuizService.fetchQuizById(id);
     res.json({ message: "Quiz updated successfully", quiz });
   } catch (err) {
