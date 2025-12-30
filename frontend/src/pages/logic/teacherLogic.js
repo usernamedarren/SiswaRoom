@@ -751,19 +751,117 @@ async function editQuiz(id) {
   el.innerHTML = renderTemplate(tplEditQuiz, {
     title: q.title || "",
     short_description: q.short_description || "",
-    total_questions: q.total_questions ?? 10,
     duration_minutes: q.duration_minutes ?? 15,
     passing_score: q.passing_score ?? 70,
   });
 
+  // Fetch detailed quiz with questions
+  const quizDetail = await fetch(`${API_BASE}/quizzes/${id}`, {
+    headers: AuthService.getAuthHeaders(),
+  }).then(r => r.json()).catch(() => q);
+
+  // Init question builder
+  const questionList = document.getElementById("q-question-list");
+  const addQuestionBtn = document.getElementById("q-add-question");
+
+  function createOptionRow(qName, optionText = "", isCorrect = false) {
+    const row = document.createElement("div");
+    row.className = "q-option-row";
+    row.style.display = "flex";
+    row.style.gap = ".5rem";
+    row.style.alignItems = "center";
+    row.innerHTML = `
+      <input type="radio" name="${qName}-correct" ${isCorrect ? "checked" : ""}>
+      <input class="input" style="flex:1;" placeholder="Pilihan jawaban" value="${escapeAttr(optionText)}">
+      <button type="button" class="btn btn-outline q-del-opt">Hapus</button>
+    `;
+    row.querySelector(".q-del-opt").onclick = () => row.remove();
+    return row;
+  }
+
+  function addQuestionBlock(prefill) {
+    const qId = uid();
+    const wrap = document.createElement("div");
+    wrap.className = "card q-block";
+    wrap.dataset.qid = qId;
+    wrap.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:.5rem; align-items:center; margin-bottom:.5rem;">
+        <strong>Pertanyaan</strong>
+        <button type="button" class="btn btn-outline q-del-question">Hapus</button>
+      </div>
+      <div class="input-group">
+        <label>Teks Pertanyaan</label>
+        <textarea class="input q-text" placeholder="Tulis pertanyaan" style="min-height:70px;"></textarea>
+      </div>
+      <div class="input-group">
+        <label>Pilihan Jawaban</label>
+        <div class="q-options stack" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <button type="button" class="btn btn-secondary q-add-option">+ Pilihan</button>
+      </div>
+    `;
+
+    const optWrap = wrap.querySelector(".q-options");
+    const addOptBtn = wrap.querySelector(".q-add-option");
+    const delBtn = wrap.querySelector(".q-del-question");
+
+    addOptBtn.onclick = () => {
+      const existing = optWrap.querySelectorAll(".q-option-row").length;
+      optWrap.appendChild(createOptionRow(qId, "", existing === 0));
+    };
+    delBtn.onclick = () => wrap.remove();
+
+    // prefill if provided
+    if (prefill?.question_text) wrap.querySelector(".q-text").value = prefill.question_text;
+    const opts = Array.isArray(prefill?.options) && prefill.options.length ? prefill.options : [
+      { option_text: "", is_correct: true },
+      { option_text: "", is_correct: false },
+    ];
+    opts.forEach((o, idx) => {
+      optWrap.appendChild(createOptionRow(qId, o.option_text || "", o.is_correct || idx === 0));
+    });
+
+    questionList.appendChild(wrap);
+  }
+
+  addQuestionBtn.onclick = () => addQuestionBlock();
+
+  // Load existing questions if available
+  const existingQuestions = Array.isArray(quizDetail?.questions) ? quizDetail.questions : [];
+  if (existingQuestions.length > 0) {
+    existingQuestions.forEach(q => addQuestionBlock(q));
+  } else {
+    addQuestionBlock(); // start with one empty
+  }
+
   document.getElementById("q-update").onclick = async () => {
     const title = document.getElementById("q-title")?.value?.trim();
     const short_description = document.getElementById("q-desc")?.value?.trim();
-    const total_questions = parseInt(document.getElementById("q-total")?.value) || 10;
     const duration_minutes = parseInt(document.getElementById("q-duration")?.value) || 15;
     const passing_score = parseInt(document.getElementById("q-passing")?.value) || 70;
 
     if (!title) return alert("Judul wajib.");
+
+    // collect questions
+    const qBlocks = [...document.querySelectorAll(".q-block")];
+    const questions = qBlocks.map((block, idx) => {
+      const qText = block.querySelector(".q-text")?.value?.trim();
+      const opts = [...block.querySelectorAll(".q-option-row")].map((row, oidx) => {
+        const text = row.querySelector("input.input")?.value?.trim();
+        const isCorrect = row.querySelector("input[type='radio']")?.checked;
+        return { option_text: text, is_correct: !!isCorrect, sort_order: oidx + 1 };
+      }).filter(o => o.option_text);
+      const hasCorrect = opts.some(o => o.is_correct);
+      return {
+        question_text: qText,
+        sort_order: idx + 1,
+        options: opts,
+        valid: qText && opts.length >= 2 && hasCorrect,
+      };
+    }).filter(q => q.question_text);
+
+    if (!questions.length) return alert("Tambah minimal 1 pertanyaan dengan pilihan.");
+    const invalid = questions.find(q => !q.valid);
+    if (invalid) return alert("Pastikan setiap pertanyaan memiliki minimal 2 pilihan dan 1 jawaban benar.");
 
     try {
       const res = await fetch(`${API_BASE}/quizzes/${id}`, {
@@ -775,9 +873,9 @@ async function editQuiz(id) {
         body: JSON.stringify({
           title,
           short_description: short_description || "",
-          total_questions,
           duration_minutes,
-          passing_score
+          passing_score,
+          questions
         })
       });
 
