@@ -10,7 +10,19 @@ const FALLBACK_BANK = {
         options: ["B", "I", "U", "A"],
         answer: "I",
         explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
-      }
+      },
+      {
+        question: "Huruf apakah yang ada di awal ibu?",
+        options: ["B", "I", "U", "A"],
+        answer: "I",
+        explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
+      },
+      {
+        question: "Huruf apakah yang ada di awal ibu?",
+        options: ["B", "I", "U", "A"],
+        answer: "I",
+        explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
+      },
     ]
   },
   q1: {
@@ -396,7 +408,7 @@ export function initQuizDetail(quiz) {
       }
       const selectedId = selectedBtn.dataset.optionId;
       const current = QUIZ[idx];
-      
+
       const selectedOpt = current.options.find((o, oIdx) => {
         const uniqueId = o.id || `opt-${idx}-${oIdx}`;
         return String(uniqueId) === selectedId;
