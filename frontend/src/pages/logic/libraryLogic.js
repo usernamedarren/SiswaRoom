@@ -79,6 +79,29 @@ async function loadLibrary() {
     const data = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);
 
     LIBRARY = data.map(normalizeLibraryItem);
+
+    // Fetch EduToon children's books and merge (dedupe by url/title)
+    try {
+      const childRes = await fetch(`${API_BASE}/library/edutoon/children`);
+      if (childRes.ok) {
+        const childBooks = await childRes.json();
+        if (Array.isArray(childBooks) && childBooks.length) {
+          const normalizedEduChildren = childBooks.map(b => {
+            const nb = normalizeEduToonBook(b);
+            nb.tags = [...new Set([...(nb.tags||[]), 'Anak'])];
+            nb.source = 'EduToon';
+            return nb;
+          });
+          // dedupe: prefer existing local items, otherwise append
+          for (const eb of normalizedEduChildren) {
+            const exists = LIBRARY.find(l => (l.url && l.url === eb.url) || (l.title && l.title === eb.title));
+            if (!exists) LIBRARY.push(eb);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[LIBRARY] Failed to fetch EduToon children books', e.message);
+    }
   } catch (err) {
     console.error("[LIBRARY] load error", err);
     if (DUMMY_DATA && !LIBRARY.length) {
@@ -199,12 +222,33 @@ function normalizeLibraryItem(item) {
   };
 }
 
+function normalizeEduToonBook(b) {
+  const title = b.title || b.name || 'EduToon Book';
+  const url = b.file_url || b.download_url || b.url || '';
+  const type = (String(b.type || 'ebook').toLowerCase().includes('ebook')) ? 'ebook' : (b.type || 'pdf');
+  const tags = ['EduToon', ...(b.category ? [b.category] : []), ...(Array.isArray(b.tags) ? b.tags : [])];
+  return {
+    id: `edutoon-${b.id || Math.random().toString(16).slice(2,8)}`,
+    title,
+    type,
+    subject: b.category || 'Umum',
+    author: b.author || b.uploader || 'EduToon',
+    year: b.year || new Date().getFullYear(),
+    description: b.short_description || b.description || '',
+    url: url || '#',
+    tags,
+    source: 'EduToon'
+  };
+}
+
 function renderLibraryCard(item) {
   return `
     <div class="card library-card fade-in-up" data-tags="${item.tags.join(' ')}">
       <div class="card-head">
         <span class="badge">${badgeIcon(item.type)} ${capitalize(item.type)}</span>
         <span class="muted">${item.year || "-"}</span>
+        ${item.source === 'EduToon' ? `<span class="tag" style="margin-left:.6rem;background:#eef">Sumber: EduToon</span>` : ''}
+        ${item.tags && item.tags.some(t=>String(t).toLowerCase() === 'anak') ? `<span class="tag" style="margin-left:.4rem;background:#ffd">Buku Anak</span>` : ''}
       </div>
       <h3>${item.title}</h3>
       <p class="text-gray">${item.description}</p>
