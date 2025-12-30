@@ -11,6 +11,12 @@ import { authenticate } from "../middleware/auth.middleware.js";
 const router = express.Router();
 router.use(authenticate);
 
+function ensureTeacher(req, res, next) {
+  const role = (req.user?.role || "").toLowerCase();
+  if (["teacher", "guru", "admin"].includes(role)) return next();
+  return res.status(403).json({ message: "Forbidden: Teacher or admin role required" });
+}
+
 /**
  * @swagger
  * /quizzes:
@@ -80,7 +86,7 @@ router.get("/", getQuizzes);
  *                 quiz:
  *                   $ref: '#/components/schemas/Quiz'
  */
-router.post("/", createQuiz);
+router.post("/", ensureTeacher, createQuiz);
 
 /**
  * @swagger
@@ -143,7 +149,7 @@ router.get("/:id", getQuizById);
  *       200:
  *         description: Quiz updated
  */
-router.put("/:id", updateQuiz);
+router.put("/:id", ensureTeacher, updateQuiz);
 
 /**
  * @swagger
@@ -163,6 +169,6 @@ router.put("/:id", updateQuiz);
  *       200:
  *         description: Quiz deleted
  */
-router.delete("/:id", deleteQuiz);
+router.delete("/:id", ensureTeacher, deleteQuiz);
 
 export default router;
