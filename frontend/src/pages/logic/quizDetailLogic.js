@@ -25,6 +25,23 @@ const FALLBACK_BANK = {
       },
     ]
   },
+  "q-lain-2": {
+    title: "Quiz Umum Lain-Lain",
+    questions: [
+      {
+        question: "Berapa jumlah provinsi di Indonesia?",
+        options: ["32", "33", "34", "35"],
+        answer: "34",
+        explanation: "Indonesia memiliki 34 provinsi (termasuk Ibu Kota Nusantara).",
+      },
+      {
+        question: "Siapa presiden Indonesia pertama?",
+        options: ["Soekarno", "Soeharto", "Habibie", "Gus Dur"],
+        answer: "Soekarno",
+        explanation: "Soekarno adalah presiden Indonesia yang pertama (1945-1967).",
+      },
+    ],
+  },
   q1: {
     title: "Bilangan Bulat",
     questions: [
@@ -69,13 +86,21 @@ export async function initQuizDetailPage(container, quizId) {
 }
 
 async function fetchQuizData(quizId) {
-// 1. CEK DULU: Jika quizId adalah kuis 'Lain-lain', ambil langsung dari FE
+  // 1. CEK DULU: Jika ada di FALLBACK_BANK, langsung ambil dari FE (untuk mata pelajaran lain-lain)
+  if (FALLBACK_BANK.hasOwnProperty(quizId)) {
+    console.log("[QUIZ] Mengambil kuis langsung dari Frontend (FE):", quizId);
+    const fallback = FALLBACK_BANK[quizId];
+    return normalizeQuiz(fallback, quizId, true);
+  }
+
+  // 2. CEK PATTERN: Jika quizId mengandung 'lain', ambil dari FE
   if (quizId.startsWith('q-lain') || quizId.includes('lain')) {
     console.log("[QUIZ] Mengambil kuis Lain-lain langsung dari Frontend (FE)");
     const fallback = FALLBACK_BANK[quizId] || FALLBACK_BANK.default;
     return normalizeQuiz(fallback, quizId, true);
   }
 
+  // 3. BACKEND: Coba fetch dari backend
   try {
     const res = await fetch(`${API_BASE}/quizzes/${quizId}`, {
       headers: { ...AuthService.getAuthHeaders() },
