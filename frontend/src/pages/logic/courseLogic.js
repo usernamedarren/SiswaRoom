@@ -216,7 +216,7 @@ const MOCK_COURSE_DETAILS = {
   lain101: {
     course_id: "lain101",
     course_name: "Lain-Lain (Pendukung)",
-    description: "Materi tambahan seperti tips belajar, literasi digital, dan pengembangan diri.",
+    description: "Materi tambahan seperti mengenal huruf, berhitung dasar, warna, bentuk, dan pendidikan karakter untuk anak-anak.",
     teacher_name: "Tim SiswaRoom",
     stats: { total_materials: 4, total_quizzes: 1, avg_quiz_score: 0 },
     is_enrolled: true,
@@ -225,25 +225,25 @@ const MOCK_COURSE_DETAILS = {
         title: "Mengenal Huruf & Membaca Awal",
         description: "Anak mulai mengenal alfabet dan mulai membaca kata sederhana",
         content: "Anak mengenal alfabet dan mulai membaca kata sederhana",
-        points: ["Pomodoro 25/5", "Active Recall", "Spaced Repetition", "Latihan soal"],
+        points: ["Huruf A-Z", "Bunyi huruf (fonik)", "Membaca kata pendek", "Tebak huruf dari gambar"],
       },
       {
         title: "Berhitung Dasar",
         description: "Anak mulai mengenal angka dan operasi dasar seperti penjumlahan dan pengurangan.",
         content: "Anak memahami konsep angka dan hitungan sederhana",
-        points: ["Prioritas", "Time blocking", "Target harian", "Review mingguan"],
+        points: ["Angka 1-20", "Penjumlahan & pengurangan sederhana", "Konsep banyak-sedikit", "Menghitung benda di sekitar"],
       },
       {
         title: "Mengenal Warna, Bentuk & Ukuran",
         description: "Anak mulai mengenal warna, bentuk, dan ukuran dasar.",
         content: "Melatih kemampuan visual dan logika dasar",
-        points: ["Cek sumber", "Cari bukti", "Jaga privasi", "Etika online"],
+        points: ["Warna dasar", "Bentuk dasar", "Ukuran dasar", "Perbandingan sederhana"],
       },
       {
         title: "Pendidikan Karakter & Sosial",
         description: "Anak mulai mengenal nilai-nilai karakter dan interaksi sosial.",
         content: "Membentuk sikap baik sejak dini",
-        points: ["Latihan soal", "Sleep", "Ringkasan", "Simulasi ujian"],
+        points: ["Sopan santun", "Jujur & berbagi", "Disiplin dan tanggung jawab", "Empati"],
       },
     ],
     quizzes: [
