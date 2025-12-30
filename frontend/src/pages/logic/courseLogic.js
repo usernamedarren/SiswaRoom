@@ -251,7 +251,7 @@ const MOCK_COURSE_DETAILS = {
       },
     ],
     quizzes: [
-      { id: "q-lain-1", title: "Kuis Pendukung 1", question_count: 10 },
+      { id: "q-lain-1", title: "Kuis Materi EduToon", question_count: 5 },
     ],
   },
 };
