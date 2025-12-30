@@ -1,31 +1,5 @@
 import { AuthService } from "../../utils/auth.js";
-
-/**
- * Guru Panel (role: teacher)
- * - Hanya: Materi, Video, Kuis
- * - Fallback localStorage kalau backend belum siap
- */
-
-const LS_KEYS = {
-  materi: "siswaroom_teacher_materi",
-  video: "siswaroom_teacher_video",
-  quiz: "siswaroom_teacher_quiz",
-};
-
-function safeJsonParse(str, fallback) {
-  try { return JSON.parse(str) ?? fallback; } catch { return fallback; }
-}
-function loadLS(key) { return safeJsonParse(localStorage.getItem(key), []); }
-function saveLS(key, value) { localStorage.setItem(key, JSON.stringify(value || [])); }
-function uid(prefix = "id") { return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`; }
-
-function getAPIBase() {
-  return (typeof API_BASE !== "undefined" && API_BASE) || window.API_BASE || "";
-}
-function hasBackend() {
-  const b = getAPIBase();
-  return typeof b === "string" && b.length > 0;
-}
+import { API_BASE } from "../../utils/config.js";
 
 function escapeHtml(str) {
   return String(str ?? "")
@@ -101,22 +75,18 @@ export async function initTeacher(container) {
 // Materi
 // ============================
 async function fetchMateri() {
-  if (hasBackend()) {
-    try {
-      const res = await fetch(`${getAPIBase()}/teacher/materials`, {
-        headers: AuthService.getAuthHeaders(),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
-      }
-    } catch { }
+  try {
+    const res = await fetch(`${API_BASE}/teacher/materials`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
+    }
+  } catch (err) {
+    console.error("[TEACHER MATERI] Fetch error:", err);
   }
-  return loadLS(LS_KEYS.materi);
-}
-
-async function persistMateri(next) {
-  saveLS(LS_KEYS.materi, next);
+  return [];
 }
 
 async function loadMateri() {
@@ -137,9 +107,9 @@ async function loadMateri() {
     return `
       <tr data-id="${id}">
         <td style="font-weight:700;">${escapeHtml(m.title || "-")}</td>
-        <td>${escapeHtml(m.subject || "-")}</td>
-        <td class="text-gray">${escapeHtml(truncate(m.description || "", 64))}</td>
-        <td>${m.link ? `<a class="link" href="${escapeAttr(m.link)}" target="_blank" rel="noreferrer">Buka</a>` : `<span class="text-gray">-</span>`}</td>
+        <td>${escapeHtml(m.course_name || "-")}</td>
+        <td class="text-gray">${escapeHtml(truncate(m.short_description || m.full_description || "", 64))}</td>
+        <td>${m.video_url ? `<a class="link" href="${escapeAttr(m.video_url)}" target="_blank" rel="noreferrer">Buka</a>` : `<span class="text-gray">-</span>`}</td>
         <td style="white-space:nowrap; display:flex; gap:.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary" data-action="edit">Edit</button>
           <button class="btn" data-action="delete">Hapus</button>
@@ -153,9 +123,9 @@ async function loadMateri() {
       <thead>
         <tr>
           <th>Judul</th>
-          <th>Mapel</th>
+          <th>Kursus</th>
           <th>Deskripsi</th>
-          <th>Link</th>
+          <th>Link Video</th>
           <th>Aksi</th>
         </tr>
       </thead>
@@ -187,23 +157,30 @@ window.showTeacherCreateMateri = function () {
       <h3>Tambah Materi</h3>
 
       <div class="input-group">
+        <label>Pilih Kursus</label>
+        <select id="m-course" class="input">
+          <option value="">-- Pilih Kursus --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
         <label>Judul</label>
         <input id="m-title" class="input" placeholder="Contoh: Persamaan Kuadrat" />
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="m-subject" class="input" placeholder="Contoh: Matematika" />
+        <label>Deskripsi Singkat</label>
+        <input id="m-short-desc" class="input" placeholder="Ringkas aja" />
       </div>
 
       <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="m-desc" class="input" placeholder="Ringkas aja" />
+        <label>Deskripsi Lengkap</label>
+        <textarea id="m-full-desc" class="input" placeholder="Penjelasan detail materi..." style="min-height:100px;"></textarea>
       </div>
 
       <div class="input-group">
-        <label>Link Materi (Drive/Docs/PDF)</label>
-        <input id="m-link" class="input" placeholder="https://..." />
+        <label>Link Video (opsional)</label>
+        <input id="m-video-url" class="input" placeholder="https://..." />
       </div>
 
       <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
@@ -213,37 +190,53 @@ window.showTeacherCreateMateri = function () {
     </div>
   `;
 
+  // Load courses for dropdown
+  loadCoursesForDropdown("m-course");
+
   document.getElementById("m-save").onclick = async () => {
+    const course_id = document.getElementById("m-course")?.value?.trim();
     const title = document.getElementById("m-title")?.value?.trim();
-    const subject = document.getElementById("m-subject")?.value?.trim();
-    const description = document.getElementById("m-desc")?.value?.trim();
-    const link = document.getElementById("m-link")?.value?.trim();
+    const short_description = document.getElementById("m-short-desc")?.value?.trim();
+    const full_description = document.getElementById("m-full-desc")?.value?.trim();
+    const video_url = document.getElementById("m-video-url")?.value?.trim();
 
+    if (!course_id) return alert("Pilih kursus terlebih dahulu.");
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
 
-    const current = await fetchMateri();
-    const next = [
-      ...current,
-      {
-        id: uid("materi"),
-        title,
-        subject,
-        description: description || "",
-        link: link || "",
-        created_at: new Date().toISOString(),
+    try {
+      const res = await fetch(`${API_BASE}/materials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          course_id: parseInt(course_id),
+          title,
+          short_description: short_description || "",
+          full_description: full_description || "",
+          video_url: video_url || ""
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal membuat materi"}`);
       }
-    ];
 
-    await persistMateri(next);
-    await loadMateri();
+      alert("Materi berhasil ditambahkan!");
+      await loadMateri();
+    } catch (err) {
+      console.error("[TEACHER MATERI] Create error:", err);
+      alert("Error: " + err.message);
+    }
   };
 };
 
 async function editMateri(id) {
   if (!id) return;
-  const current = await fetchMateri();
-  const m = current.find(x => (x.id || x._id || x.uuid) === id);
+  const items = await fetchMateri();
+  const m = items.find(x => x.id === id);
   if (!m) return alert("Materi tidak ditemukan.");
 
   const el = document.getElementById("teacher-materi-list");
@@ -259,18 +252,18 @@ async function editMateri(id) {
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="m-subject" class="input" value="${escapeAttr(m.subject || "")}" />
+        <label>Deskripsi Singkat</label>
+        <input id="m-short-desc" class="input" value="${escapeAttr(m.short_description || "")}" />
       </div>
 
       <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="m-desc" class="input" value="${escapeAttr(m.description || "")}" />
+        <label>Deskripsi Lengkap</label>
+        <textarea id="m-full-desc" class="input" style="min-height:100px;">${escapeHtml(m.full_description || "")}</textarea>
       </div>
 
       <div class="input-group">
-        <label>Link</label>
-        <input id="m-link" class="input" value="${escapeAttr(m.link || "")}" />
+        <label>Link Video</label>
+        <input id="m-video-url" class="input" value="${escapeAttr(m.video_url || "")}" />
       </div>
 
       <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
@@ -282,49 +275,83 @@ async function editMateri(id) {
 
   document.getElementById("m-update").onclick = async () => {
     const title = document.getElementById("m-title")?.value?.trim();
-    const subject = document.getElementById("m-subject")?.value?.trim();
-    const description = document.getElementById("m-desc")?.value?.trim();
-    const link = document.getElementById("m-link")?.value?.trim();
+    const short_description = document.getElementById("m-short-desc")?.value?.trim();
+    const full_description = document.getElementById("m-full-desc")?.value?.trim();
+    const video_url = document.getElementById("m-video-url")?.value?.trim();
 
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
 
-    const next = current.map(x => {
-      const xid = x.id || x._id || x.uuid;
-      if (xid !== id) return x;
-      return { ...x, title, subject, description: description || "", link: link || "" };
-    });
+    try {
+      const res = await fetch(`${API_BASE}/materials/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          title,
+          short_description: short_description || "",
+          full_description: full_description || "",
+          video_url: video_url || ""
+        })
+      });
 
-    await persistMateri(next);
-    await loadMateri();
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal mengubah materi"}`);
+      }
+
+      alert("Materi berhasil diubah!");
+      await loadMateri();
+    } catch (err) {
+      console.error("[TEACHER MATERI] Update error:", err);
+      alert("Error: " + err.message);
+    }
   };
 }
 
 async function deleteMateri(id) {
   if (!id) return;
   if (!confirm("Hapus materi ini?")) return;
-  const current = await fetchMateri();
-  const next = current.filter(x => (x.id || x._id || x.uuid) !== id);
-  await persistMateri(next);
-  await loadMateri();
+  
+  try {
+    const res = await fetch(`${API_BASE}/materials/${id}`, {
+      method: "DELETE",
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      return alert(`Error: ${err.message || "Gagal menghapus materi"}`);
+    }
+
+    alert("Materi berhasil dihapus!");
+    await loadMateri();
+  } catch (err) {
+    console.error("[TEACHER MATERI] Delete error:", err);
+    alert("Error: " + err.message);
+  }
 }
 
 // ============================
 // Video
 // ============================
 async function fetchVideo() {
-  if (hasBackend()) {
-    try {
-      const res = await fetch(`${getAPIBase()}/teacher/videos`, { headers: AuthService.getAuthHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
-      }
-    } catch { }
+  try {
+    const res = await fetch(`${API_BASE}/teacher/materials`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const materials = Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
+      // Filter materials that have video_url (treated as videos)
+      return materials.filter(m => m.video_url);
+    }
+  } catch (err) {
+    console.error("[TEACHER VIDEO] Fetch error:", err);
   }
-  return loadLS(LS_KEYS.video);
+  return [];
 }
-async function persistVideo(next) { saveLS(LS_KEYS.video, next); }
 
 async function loadVideo() {
   const el = document.getElementById("teacher-video-list");
@@ -344,8 +371,8 @@ async function loadVideo() {
     return `
       <tr data-id="${id}">
         <td style="font-weight:700;">${escapeHtml(v.title || "-")}</td>
-        <td>${escapeHtml(v.subject || "-")}</td>
-        <td>${v.url ? `<a class="link" href="${escapeAttr(v.url)}" target="_blank" rel="noreferrer">Buka</a>` : `<span class="text-gray">-</span>`}</td>
+        <td>${escapeHtml(v.course_name || "-")}</td>
+        <td>${v.video_url ? `<a class="link" href="${escapeAttr(v.video_url)}" target="_blank" rel="noreferrer">Buka</a>` : `<span class="text-gray">-</span>`}</td>
         <td style="white-space:nowrap; display:flex; gap:.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary" data-action="edit">Edit</button>
           <button class="btn" data-action="delete">Hapus</button>
@@ -359,7 +386,7 @@ async function loadVideo() {
       <thead>
         <tr>
           <th>Judul</th>
-          <th>Mapel</th>
+          <th>Kursus</th>
           <th>Link Video</th>
           <th>Aksi</th>
         </tr>
@@ -385,13 +412,20 @@ window.showTeacherCreateVideo = function () {
       <h3>Tambah Video</h3>
 
       <div class="input-group">
+        <label>Pilih Kursus</label>
+        <select id="v-course" class="input">
+          <option value="">-- Pilih Kursus --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
         <label>Judul</label>
         <input id="v-title" class="input" placeholder="Contoh: Trigonometri Dasar" />
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="v-subject" class="input" placeholder="Contoh: Matematika" />
+        <label>Deskripsi</label>
+        <textarea id="v-desc" class="input" placeholder="Deskripsi video..." style="min-height:80px;"></textarea>
       </div>
 
       <div class="input-group">
@@ -406,30 +440,52 @@ window.showTeacherCreateVideo = function () {
     </div>
   `;
 
+  loadCoursesForDropdown("v-course");
+
   document.getElementById("v-save").onclick = async () => {
+    const course_id = document.getElementById("v-course")?.value?.trim();
     const title = document.getElementById("v-title")?.value?.trim();
-    const subject = document.getElementById("v-subject")?.value?.trim();
-    const url = document.getElementById("v-url")?.value?.trim();
+    const short_description = document.getElementById("v-desc")?.value?.trim();
+    const video_url = document.getElementById("v-url")?.value?.trim();
 
+    if (!course_id) return alert("Pilih kursus terlebih dahulu.");
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
-    if (!url) return alert("Link video wajib.");
+    if (!video_url) return alert("Link video wajib.");
 
-    const current = await fetchVideo();
-    const next = [
-      ...current,
-      { id: uid("video"), title, subject, url, created_at: new Date().toISOString() }
-    ];
+    try {
+      const res = await fetch(`${API_BASE}/materials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          course_id: parseInt(course_id),
+          title,
+          short_description: short_description || "",
+          full_description: "",
+          video_url
+        })
+      });
 
-    await persistVideo(next);
-    await loadVideo();
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal membuat video"}`);
+      }
+
+      alert("Video berhasil ditambahkan!");
+      await loadVideo();
+    } catch (err) {
+      console.error("[TEACHER VIDEO] Create error:", err);
+      alert("Error: " + err.message);
+    }
   };
 };
 
 async function editVideo(id) {
   if (!id) return;
-  const current = await fetchVideo();
-  const v = current.find(x => (x.id || x._id || x.uuid) === id);
+  const items = await fetchVideo();
+  const v = items.find(x => x.id === id);
   if (!v) return alert("Video tidak ditemukan.");
 
   const el = document.getElementById("teacher-video-list");
@@ -445,13 +501,13 @@ async function editVideo(id) {
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="v-subject" class="input" value="${escapeAttr(v.subject || "")}" />
+        <label>Deskripsi</label>
+        <textarea id="v-desc" class="input" style="min-height:80px;">${escapeHtml(v.short_description || "")}</textarea>
       </div>
 
       <div class="input-group">
         <label>Link Video</label>
-        <input id="v-url" class="input" value="${escapeAttr(v.url || "")}" />
+        <input id="v-url" class="input" value="${escapeAttr(v.video_url || "")}" />
       </div>
 
       <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
@@ -463,49 +519,81 @@ async function editVideo(id) {
 
   document.getElementById("v-update").onclick = async () => {
     const title = document.getElementById("v-title")?.value?.trim();
-    const subject = document.getElementById("v-subject")?.value?.trim();
-    const url = document.getElementById("v-url")?.value?.trim();
+    const short_description = document.getElementById("v-desc")?.value?.trim();
+    const video_url = document.getElementById("v-url")?.value?.trim();
 
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
-    if (!url) return alert("Link video wajib.");
+    if (!video_url) return alert("Link video wajib.");
 
-    const next = current.map(x => {
-      const xid = x.id || x._id || x.uuid;
-      if (xid !== id) return x;
-      return { ...x, title, subject, url };
-    });
+    try {
+      const res = await fetch(`${API_BASE}/materials/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          title,
+          short_description: short_description || "",
+          full_description: "",
+          video_url
+        })
+      });
 
-    await persistVideo(next);
-    await loadVideo();
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal mengubah video"}`);
+      }
+
+      alert("Video berhasil diubah!");
+      await loadVideo();
+    } catch (err) {
+      console.error("[TEACHER VIDEO] Update error:", err);
+      alert("Error: " + err.message);
+    }
   };
 }
 
 async function deleteVideo(id) {
   if (!id) return;
   if (!confirm("Hapus video ini?")) return;
-  const current = await fetchVideo();
-  const next = current.filter(x => (x.id || x._id || x.uuid) !== id);
-  await persistVideo(next);
-  await loadVideo();
+  
+  try {
+    const res = await fetch(`${API_BASE}/materials/${id}`, {
+      method: "DELETE",
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      return alert(`Error: ${err.message || "Gagal menghapus video"}`);
+    }
+
+    alert("Video berhasil dihapus!");
+    await loadVideo();
+  } catch (err) {
+    console.error("[TEACHER VIDEO] Delete error:", err);
+    alert("Error: " + err.message);
+  }
 }
 
 // ============================
 // Quiz
 // ============================
 async function fetchQuiz() {
-  if (hasBackend()) {
-    try {
-      const res = await fetch(`${getAPIBase()}/teacher/quizzes`, { headers: AuthService.getAuthHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
-      }
-    } catch { }
+  try {
+    const res = await fetch(`${API_BASE}/teacher/quizzes`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : [];
+    }
+  } catch (err) {
+    console.error("[TEACHER QUIZ] Fetch error:", err);
   }
-  return loadLS(LS_KEYS.quiz);
+  return [];
 }
-async function persistQuiz(next) { saveLS(LS_KEYS.quiz, next); }
 
 async function loadQuiz() {
   const el = document.getElementById("teacher-quiz-list");
@@ -525,8 +613,8 @@ async function loadQuiz() {
     return `
       <tr data-id="${id}">
         <td style="font-weight:700;">${escapeHtml(q.title || "-")}</td>
-        <td>${escapeHtml(q.subject || "-")}</td>
-        <td class="text-gray">${escapeHtml(truncate(q.description || "", 64))}</td>
+        <td>${escapeHtml(q.course_name || "-")}</td>
+        <td class="text-gray">${escapeHtml(truncate(q.short_description || "", 64))}</td>
         <td style="white-space:nowrap; display:flex; gap:.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary" data-action="edit">Edit</button>
           <button class="btn" data-action="delete">Hapus</button>
@@ -540,7 +628,7 @@ async function loadQuiz() {
       <thead>
         <tr>
           <th>Judul</th>
-          <th>Mapel</th>
+          <th>Kursus</th>
           <th>Deskripsi</th>
           <th>Aksi</th>
         </tr>
@@ -566,18 +654,35 @@ window.showTeacherCreateQuiz = function () {
       <h3>Tambah Kuis</h3>
 
       <div class="input-group">
+        <label>Pilih Kursus</label>
+        <select id="q-course" class="input">
+          <option value="">-- Pilih Kursus --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
         <label>Judul</label>
         <input id="q-title" class="input" placeholder="Contoh: Kuis Bab 1" />
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="q-subject" class="input" placeholder="Contoh: Matematika" />
+        <label>Deskripsi</label>
+        <input id="q-desc" class="input" placeholder="Misal: 10 soal pilihan ganda" />
       </div>
 
       <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="q-desc" class="input" placeholder="Misal: 10 soal pilihan ganda" />
+        <label>Jumlah Soal</label>
+        <input id="q-total" class="input" type="number" placeholder="10" value="10" />
+      </div>
+
+      <div class="input-group">
+        <label>Durasi (menit)</label>
+        <input id="q-duration" class="input" type="number" placeholder="15" value="15" />
+      </div>
+
+      <div class="input-group">
+        <label>Nilai Kelulusan</label>
+        <input id="q-passing" class="input" type="number" placeholder="70" value="70" />
       </div>
 
       <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
@@ -587,29 +692,54 @@ window.showTeacherCreateQuiz = function () {
     </div>
   `;
 
+  loadCoursesForDropdown("q-course");
+
   document.getElementById("q-save").onclick = async () => {
+    const course_id = document.getElementById("q-course")?.value?.trim();
     const title = document.getElementById("q-title")?.value?.trim();
-    const subject = document.getElementById("q-subject")?.value?.trim();
-    const description = document.getElementById("q-desc")?.value?.trim();
+    const short_description = document.getElementById("q-desc")?.value?.trim();
+    const total_questions = parseInt(document.getElementById("q-total")?.value) || 10;
+    const duration_minutes = parseInt(document.getElementById("q-duration")?.value) || 15;
+    const passing_score = parseInt(document.getElementById("q-passing")?.value) || 70;
 
+    if (!course_id) return alert("Pilih kursus terlebih dahulu.");
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
 
-    const current = await fetchQuiz();
-    const next = [
-      ...current,
-      { id: uid("quiz"), title, subject, description: description || "", created_at: new Date().toISOString() }
-    ];
+    try {
+      const res = await fetch(`${API_BASE}/quizzes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          course_id: parseInt(course_id),
+          title,
+          short_description: short_description || "",
+          total_questions,
+          duration_minutes,
+          passing_score
+        })
+      });
 
-    await persistQuiz(next);
-    await loadQuiz();
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal membuat kuis"}`);
+      }
+
+      alert("Kuis berhasil ditambahkan!");
+      await loadQuiz();
+    } catch (err) {
+      console.error("[TEACHER QUIZ] Create error:", err);
+      alert("Error: " + err.message);
+    }
   };
 };
 
 async function editQuiz(id) {
   if (!id) return;
-  const current = await fetchQuiz();
-  const q = current.find(x => (x.id || x._id || x.uuid) === id);
+  const items = await fetchQuiz();
+  const q = items.find(x => x.id === id);
   if (!q) return alert("Kuis tidak ditemukan.");
 
   const el = document.getElementById("teacher-quiz-list");
@@ -625,13 +755,23 @@ async function editQuiz(id) {
       </div>
 
       <div class="input-group">
-        <label>Mapel</label>
-        <input id="q-subject" class="input" value="${escapeAttr(q.subject || "")}" />
+        <label>Deskripsi</label>
+        <input id="q-desc" class="input" value="${escapeAttr(q.short_description || "")}" />
       </div>
 
       <div class="input-group">
-        <label>Deskripsi</label>
-        <input id="q-desc" class="input" value="${escapeAttr(q.description || "")}" />
+        <label>Jumlah Soal</label>
+        <input id="q-total" class="input" type="number" value="${q.total_questions || 10}" />
+      </div>
+
+      <div class="input-group">
+        <label>Durasi (menit)</label>
+        <input id="q-duration" class="input" type="number" value="${q.duration_minutes || 15}" />
+      </div>
+
+      <div class="input-group">
+        <label>Nilai Kelulusan</label>
+        <input id="q-passing" class="input" type="number" value="${q.passing_score || 70}" />
       </div>
 
       <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
@@ -643,28 +783,87 @@ async function editQuiz(id) {
 
   document.getElementById("q-update").onclick = async () => {
     const title = document.getElementById("q-title")?.value?.trim();
-    const subject = document.getElementById("q-subject")?.value?.trim();
-    const description = document.getElementById("q-desc")?.value?.trim();
+    const short_description = document.getElementById("q-desc")?.value?.trim();
+    const total_questions = parseInt(document.getElementById("q-total")?.value) || 10;
+    const duration_minutes = parseInt(document.getElementById("q-duration")?.value) || 15;
+    const passing_score = parseInt(document.getElementById("q-passing")?.value) || 70;
 
     if (!title) return alert("Judul wajib.");
-    if (!subject) return alert("Mapel wajib.");
 
-    const next = current.map(x => {
-      const xid = x.id || x._id || x.uuid;
-      if (xid !== id) return x;
-      return { ...x, title, subject, description: description || "" };
-    });
+    try {
+      const res = await fetch(`${API_BASE}/quizzes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          title,
+          short_description: short_description || "",
+          total_questions,
+          duration_minutes,
+          passing_score
+        })
+      });
 
-    await persistQuiz(next);
-    await loadQuiz();
+      if (!res.ok) {
+        const err = await res.json();
+        return alert(`Error: ${err.message || "Gagal mengubah kuis"}`);
+      }
+
+      alert("Kuis berhasil diubah!");
+      await loadQuiz();
+    } catch (err) {
+      console.error("[TEACHER QUIZ] Update error:", err);
+      alert("Error: " + err.message);
+    }
   };
 }
 
 async function deleteQuiz(id) {
   if (!id) return;
   if (!confirm("Hapus kuis ini?")) return;
-  const current = await fetchQuiz();
-  const next = current.filter(x => (x.id || x._id || x.uuid) !== id);
-  await persistQuiz(next);
-  await loadQuiz();
+  
+  try {
+    const res = await fetch(`${API_BASE}/quizzes/${id}`, {
+      method: "DELETE",
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      return alert(`Error: ${err.message || "Gagal menghapus kuis"}`);
+    }
+
+    alert("Kuis berhasil dihapus!");
+    await loadQuiz();
+  } catch (err) {
+    console.error("[TEACHER QUIZ] Delete error:", err);
+    alert("Error: " + err.message);
+  }
+}
+
+// ============================
+// Helper: Load courses for dropdown
+// ============================
+async function loadCoursesForDropdown(selectElementId) {
+  const selectEl = document.getElementById(selectElementId);
+  if (!selectEl) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/teacher/courses`, {
+      headers: AuthService.getAuthHeaders(),
+    });
+
+    if (!res.ok) return;
+
+    const courses = await res.json();
+    const options = courses.map(c => `<option value="${c.id}">${escapeHtml(c.name || "")}</option>`).join("");
+    
+    if (options) {
+      selectEl.innerHTML = `<option value="">-- Pilih Kursus --</option>${options}`;
+    }
+  } catch (err) {
+    console.error("[TEACHER] Load courses error:", err);
+  }
 }
