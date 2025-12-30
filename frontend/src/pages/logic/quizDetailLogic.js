@@ -12,17 +12,29 @@ const FALLBACK_BANK = {
         explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
       },
       {
-        question: "Huruf apakah yang ada di awal ibu?",
-        options: ["B", "I", "U", "A"],
-        answer: "I",
-        explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
+        question: "Manakah kata yang benar di bawah ini?",
+        options: ["blao", "bolu", "bola", "bulo"],
+        answer: "bola",
+        explanation: "Kata 'bola' adalah kata yang benar. Perhatikan ejaan yang tepat.",
       },
       {
-        question: "Huruf apakah yang ada di awal ibu?",
-        options: ["B", "I", "U", "A"],
-        answer: "I",
-        explanation: "Kata ibu diawali dengan huruf I. Kita membaca kata dari huruf pertama ya",
+        question: "2 + 3= ...",
+        options: ["4", "5", "6", "7"],
+        answer: "5",
+        explanation: "2 ditambah 3 hasilnya 5. Coba hitung pakai jari ya.",
       },
+      {
+        question: "Bentuk roda biasanya berbentuk …",
+        options: ["Lingkaran", "Persegi", "Segitiga", "Oval"],
+        answer: "Lingkaran",
+        explanation: "Roda biasanya berbentuk lingkaran agar dapat berputar dengan lancar.",
+      },  
+      {
+        question: "Jika kamu punya dua permen dan temanmu tidak punya, sikap yang baik adalah …",
+        options: ["Memberi satu permen", "Makan semua permen sendiri", "Tidak peduli", "Mengambil permen teman"],
+        answer: "Memberi satu permen",
+        explanation: "Sikap yang baik adalah berbagi dengan teman yang tidak punya permen.",
+      },      
     ]
   },
   "q-lain-2": {
