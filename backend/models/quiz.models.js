@@ -57,6 +57,31 @@ export async function deleteQuiz(id) {
   return result.affectedRows > 0;
 }
 
+// Insert helpers using provided connection (transaction)
+export async function insertQuizTx(conn, courseId, title, shortDescription, totalQuestions, durationMinutes, passingScore) {
+  const [result] = await conn.query(
+    "INSERT INTO quizzes (course_id, title, short_description, total_questions, duration_minutes, passing_score) VALUES (?, ?, ?, ?, ?, ?)",
+    [courseId, title, shortDescription, totalQuestions, durationMinutes, passingScore]
+  );
+  return result.insertId;
+}
+
+export async function insertQuestionTx(conn, quizId, questionText, explanation, sortOrder) {
+  const [result] = await conn.query(
+    "INSERT INTO quiz_questions (quiz_id, question_text, explanation, sort_order) VALUES (?, ?, ?, ?)",
+    [quizId, questionText, explanation || "", sortOrder]
+  );
+  return result.insertId;
+}
+
+export async function insertOptionTx(conn, questionId, optionText, isCorrect, sortOrder) {
+  const [result] = await conn.query(
+    "INSERT INTO quiz_options (question_id, option_text, is_correct, sort_order) VALUES (?, ?, ?, ?)",
+    [questionId, optionText, isCorrect ? 1 : 0, sortOrder]
+  );
+  return result.insertId;
+}
+
 // Questions
 export async function getQuestionsByQuiz(quizId) {
   const [rows] = await db.query(

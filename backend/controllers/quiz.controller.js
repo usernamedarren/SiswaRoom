@@ -54,7 +54,7 @@ export async function getQuizById(req, res) {
 
 export async function createQuiz(req, res) {
   try {
-    const { course_id, title, short_description, total_questions, duration_minutes, passing_score } = req.body;
+    const { course_id, title, short_description, total_questions, duration_minutes, passing_score, questions } = req.body;
 
     if (!course_id || !title) {
       return res.status(400).json({ message: "course_id and title are required" });
@@ -70,14 +70,39 @@ export async function createQuiz(req, res) {
       if (!ok) return res.status(403).json({ message: "Forbidden: Course is not yours" });
     }
 
-    const quizId = await QuizService.createNewQuiz(
-      courseId,
-      title,
-      short_description,
-      total_questions || 0,
-      duration_minutes || 10,
-      passing_score || 70
-    );
+    // validate questions if provided
+    if (Array.isArray(questions) && questions.length) {
+      for (const q of questions) {
+        if (!q.question_text) return res.status(400).json({ message: "Each question must have question_text" });
+        if (!Array.isArray(q.options) || q.options.length < 2) {
+          return res.status(400).json({ message: "Each question needs at least 2 options" });
+        }
+        const hasCorrect = q.options.some(o => o.is_correct);
+        if (!hasCorrect) return res.status(400).json({ message: "Each question needs a correct option" });
+      }
+    }
+
+    let quizId;
+    if (Array.isArray(questions) && questions.length) {
+      quizId = await QuizService.createQuizWithQuestions({
+        course_id: courseId,
+        title,
+        short_description,
+        total_questions: questions.length,
+        duration_minutes: duration_minutes || 10,
+        passing_score: passing_score || 70,
+        questions
+      });
+    } else {
+      quizId = await QuizService.createNewQuiz(
+        courseId,
+        title,
+        short_description,
+        total_questions || 0,
+        duration_minutes || 10,
+        passing_score || 70
+      );
+    }
     const quiz = await QuizService.fetchQuizById(quizId);
 
     res.status(201).json({

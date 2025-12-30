@@ -33,6 +33,15 @@
     <input id="q-passing" class="input" type="number" placeholder="70" value="70" />
   </div>
 
+  <div class="card" style="margin-top:1rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:wrap;">
+      <h4 style="margin:0;">Pertanyaan & Pilihan Jawaban</h4>
+      <button type="button" class="btn btn-secondary" id="q-add-question">+ Tambah Pertanyaan</button>
+    </div>
+    <p class="text-gray" style="margin:.35rem 0 1rem 0;">Isi minimal 1 pertanyaan dengan pilihan dan jawaban benar.</p>
+    <div id="q-question-list" class="stack" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+
   <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.25rem;">
     <button class="btn btn-primary" id="q-save">Simpan</button>
     <button class="btn btn-secondary" onclick="location.hash='#/teacher?tab=kuis'">Batal</button>
