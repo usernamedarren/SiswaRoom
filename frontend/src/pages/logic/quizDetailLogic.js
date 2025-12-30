@@ -162,15 +162,25 @@ function normalizeSimpleQuestion(q, idx) {
 function normalizeQuestion(q, idx) {
   const optionsRaw = Array.isArray(q.options) ? q.options : Array.isArray(q.choices) ? q.choices : [];
   const options = optionsRaw.map((opt, oIdx) => {
-    const id = opt.id || opt.option_id || `${idx}-${oIdx}`;
-    const text = opt.option_text || opt.text || opt.label || String(opt.value || "");
-    const isCorrect = Boolean(
-      opt.is_correct ||
-      opt.correct ||
-      opt.is_true ||
-      (q.correct_option_id && (id === q.correct_option_id || opt.option_id === q.correct_option_id)) ||
-      (q.correct_answer && String(q.correct_answer).trim() === text.trim())
-    );
+    let id, text, isCorrect;
+
+    // Handle case: opt adalah string (simple format dari FE/FALLBACK_BANK)
+    if (typeof opt === "string") {
+      id = `${idx}-${oIdx}`;
+      text = opt;
+      isCorrect = opt === q.answer || opt === q.correct_answer;
+    } else {
+      // Handle case: opt adalah object (backend format)
+      id = opt.id || opt.option_id || `${idx}-${oIdx}`;
+      text = opt.option_text || opt.text || opt.label || String(opt.value || "");
+      isCorrect = Boolean(
+        opt.is_correct ||
+        opt.correct ||
+        opt.is_true ||
+        (q.correct_option_id && (id === q.correct_option_id || opt.option_id === q.correct_option_id)) ||
+        (q.correct_answer && String(q.correct_answer).trim() === text.trim())
+      );
+    }
 
     return { id, text, isCorrect };
   }).filter((o) => o.text);
