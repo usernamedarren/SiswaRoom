@@ -10,6 +10,7 @@
       <a href="#/courses" class="nav-item">Mata Pelajaran</a>
       <a href="#/library" class="nav-item">Library</a>
       <a href="#/kuis" class="nav-item">Quiz</a>
+      <button type="button" class="nav-item" onclick="event.preventDefault(); document.getElementById('chatbot-widget')?.classList.toggle('open');" style="border:none; background:none; cursor:pointer;">🤖 AI Tutor</button>
       __ADMIN_ITEM__
       <span class="nav-indicator" id="nav-indicator"></span>
     </nav>
@@ -29,6 +30,7 @@
     <button type="button" class="mobile-item btn" data-nav="#/courses" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/courses'; closeMobileMenu();">Mata Pelajaran</button>
     <button type="button" class="mobile-item btn" data-nav="#/jadwal" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/jadwal'; closeMobileMenu();">Jadwal</button>
     <button type="button" class="mobile-item btn" data-nav="#/kuis" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/kuis'; closeMobileMenu();">Quiz</button>
+    <button type="button" class="mobile-item btn" onclick="closeMobileMenu(); setTimeout(()=>document.getElementById('chatbot-widget')?.classList.add('open'), 300);">🤖 AI Tutor</button>
     __ADMIN_MOBILE__
     __USER_BOX__
     __LOGOUT_MOBILE__
