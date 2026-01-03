@@ -74,13 +74,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     </button>
   </div>
 </div>
-
-<!-- Chatbot Toggle Button -->
-<button id="chatbot-toggle-btn" class="chatbot-toggle-btn" title="Buka Chatbot">
-  <svg viewBox="0 0 24 24" width="24" height="24">
-    <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-  </svg>
-</button>
     `;
 
     // Inject chatbot HTML
@@ -104,39 +97,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * Setup all chatbot event handlers
+ * Setup all chatbot event handlers using event delegation
  */
 function setupChatbotEventHandlers() {
-  // Floating toggle button (bottom-right)
-  const toggleBtn = document.getElementById('chatbot-toggle-btn');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', toggleChatbot, false);
-  }
+  // Use event delegation - attach to document level
+  // This way works even if navbar is re-rendered
+  
+  // Navbar AI Tutor button click
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#navbar-ai-tutor') || e.target.closest('#mobile-ai-tutor')) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleChatbot();
+    }
+  }, false);
 
-  // Navbar AI Tutor button
-  const navbarBtn = document.getElementById('navbar-ai-tutor');
-  if (navbarBtn) {
-    navbarBtn.addEventListener('click', toggleChatbot, false);
-  }
+  // Close button (X in chatbot header)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#toggle-chatbot')) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeChatbot();
+    }
+  }, false);
 
-  // Close button (X in header)
-  const closeBtn = document.getElementById('toggle-chatbot');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeChatbot, false);
-  }
+  // Floating toggle button (bottom-right) - if exists
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#chatbot-toggle-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleChatbot();
+    }
+  }, false);
 
-  console.log('[Chatbot] Event handlers setup complete');
+  console.log('[Chatbot] Event delegation setup complete');
 }
 
 /**
  * Toggle chatbot visibility
  */
 function toggleChatbot(e) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  
   const widget = document.getElementById('chatbot-widget');
   if (widget) {
     widget.classList.toggle('open');
@@ -148,11 +148,6 @@ function toggleChatbot(e) {
  * Close chatbot
  */
 function closeChatbot(e) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  
   const widget = document.getElementById('chatbot-widget');
   if (widget) {
     widget.classList.remove('open');
