@@ -9,7 +9,7 @@ RUN apk add --no-cache wget
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production
+RUN npm install --legacy-peer-deps --production
 
 # Copy source code
 COPY . .
