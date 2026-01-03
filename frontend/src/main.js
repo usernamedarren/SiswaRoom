@@ -1,11 +1,15 @@
 // main.js
 import "./styles/global.css";
+import { API_BASE } from "./utils/config.js";
+
+// Set global API_URL for chatbot and other modules
+window.API_URL = API_BASE;
+
 import "./styles/chatbot.css"; // Chatbot widget styles
 import "./chatbot-init.js"; // Inject and initialize chatbot widget
 import { Navbar, initNavIndicator } from "./components/navbar.js";
 import { router } from "./router.js";
 import { AuthService } from "./utils/auth.js";
-import { API_BASE } from "./utils/config.js";
 
 /* ===============================
    AUTH INIT
