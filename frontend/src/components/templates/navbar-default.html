@@ -10,12 +10,12 @@
       <a href="#/courses" class="nav-item">Mata Pelajaran</a>
       <a href="#/library" class="nav-item">Library</a>
       <a href="#/kuis" class="nav-item">Quiz</a>
-      <button type="button" class="nav-item" id="navbar-ai-tutor" style="border:none; background:none; cursor:pointer; padding: 8px 16px; font-size: 16px; color: inherit;">🤖 AI Tutor</button>
       __ADMIN_ITEM__
       <span class="nav-indicator" id="nav-indicator"></span>
     </nav>
 
     <div class="nav-right">
+      <button type="button" id="navbar-ai-tutor" class="nav-item" style="border:none; background:none; cursor:pointer; padding: 8px 12px; font-size: 18px; color: inherit; display: flex; align-items: center; gap: 4px;">🤖</button>
       __USER_BOX__
       __LOGOUT__
     </div>
@@ -30,7 +30,7 @@
     <button type="button" class="mobile-item btn" data-nav="#/courses" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/courses'; closeMobileMenu();">Mata Pelajaran</button>
     <button type="button" class="mobile-item btn" data-nav="#/jadwal" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/jadwal'; closeMobileMenu();">Jadwal</button>
     <button type="button" class="mobile-item btn" data-nav="#/kuis" onclick="window.__suppressIndicatorAnim=true; setTimeout(()=>{window.__suppressIndicatorAnim=false},220); location.hash='#/kuis'; closeMobileMenu();">Quiz</button>
-    <button type="button" class="mobile-item btn" onclick="closeMobileMenu(); setTimeout(()=>document.getElementById('chatbot-widget')?.classList.add('open'), 300);">🤖 AI Tutor</button>
+    <button type="button" class="mobile-item btn" id="mobile-ai-tutor" onclick="closeMobileMenu(); setTimeout(()=>{const w = document.getElementById('chatbot-widget'); if(w) w.classList.toggle('open');}, 300);">🤖 AI Tutor</button>
     __ADMIN_MOBILE__
     __USER_BOX__
     __LOGOUT_MOBILE__
