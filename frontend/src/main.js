@@ -1,5 +1,7 @@
 // main.js
 import "./styles/global.css";
+import "./styles/chatbot.css"; // Chatbot widget styles
+import "./chatbot-init.js"; // Inject and initialize chatbot widget
 import { Navbar, initNavIndicator } from "./components/navbar.js";
 import { router } from "./router.js";
 import { AuthService } from "./utils/auth.js";
