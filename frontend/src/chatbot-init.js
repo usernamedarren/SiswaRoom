@@ -3,7 +3,7 @@
  * Letakkan kode ini di file HTML utama atau router main
  */
 
-import { initChatbot, clearChatHistory, getTopicHelp, explainConcept } from './src/pages/logic/chatbotLogic.js';
+import { initChatbot, clearChatHistory, getTopicHelp, explainConcept } from './pages/logic/chatbotLogic.js';
 
 /**
  * Initialize Chatbot saat DOM siap
@@ -93,6 +93,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize chatbot functionality
     initChatbot();
+
+    // Add toggle button handler
+    const toggleBtn = document.getElementById('chatbot-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        document.getElementById('chatbot-widget')?.classList.toggle('open');
+      });
+    }
 
     console.log('[Chatbot] Successfully initialized!');
   } catch (error) {
