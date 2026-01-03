@@ -94,13 +94,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize chatbot functionality
     initChatbot();
 
-    // Add toggle button handler
+    // Add toggle button handler for floating button
     const toggleBtn = document.getElementById('chatbot-toggle-btn');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
-        document.getElementById('chatbot-widget')?.classList.toggle('open');
+        const widget = document.getElementById('chatbot-widget');
+        widget?.classList.toggle('open');
       });
     }
+
+    // Add navbar button handler
+    const navbarBtn = document.getElementById('navbar-ai-tutor');
+    if (navbarBtn) {
+      navbarBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const widget = document.getElementById('chatbot-widget');
+        widget?.classList.toggle('open');
+      });
+    }
+
+    // Close widget when X button is clicked
+    const closeBtn = document.getElementById('toggle-chatbot');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        const widget = document.getElementById('chatbot-widget');
+        widget?.classList.remove('open');
+      });
+    }
+  } catch (error) {
+    console.error('[Chatbot] Initialization error:', error);
+  }
+});
 
     console.log('[Chatbot] Successfully initialized!');
   } catch (error) {
