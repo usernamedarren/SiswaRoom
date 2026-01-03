@@ -27,13 +27,11 @@ services:
       AI_MODEL: ${AI_MODEL:-llama-3.3-70b-versatile}
       AI_API_URL: ${AI_API_URL:-https://api.groq.com/openai/v1/chat/completions}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
-    depends_on:
-      - mysql
 
   # Frontend Web Service (Nginx)
   frontend:
@@ -52,23 +50,11 @@ services:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
-
-  # MySQL Reference (external container, join network only)
-  mysql:
-    image: mysql:9.0.1
-    container_name: mysql_siswaroom-mysql_siswaroom-1
-    networks:
-      - siswaroom-net
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-admin}
-      MYSQL_DATABASE: ${DB_NAME:-siswaroom}
-    profiles:
-      - donotstart
 
 networks:
   siswaroom-net:
