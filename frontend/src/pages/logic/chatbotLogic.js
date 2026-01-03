@@ -15,32 +15,27 @@ export function initChatbot() {
 }
 
 /**
- * Setup event listeners untuk chatbot
+ * Setup event listeners untuk chatbot (hanya untuk form dan send button)
  */
 function setupChatbotEventListeners() {
   const chatForm = document.getElementById('chatbot-form');
   const chatInput = document.getElementById('chat-input');
-  const chatMessages = document.getElementById('chat-messages');
   const sendBtn = document.getElementById('send-btn');
-  const toggleBtn = document.getElementById('toggle-chatbot');
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', toggleChatbot);
-  }
 
   if (chatForm) {
     chatForm.addEventListener('submit', (e) => {
       e.preventDefault();
       sendMessage(chatInput.value);
       chatInput.value = '';
-    });
+    }, false);
   }
 
   if (sendBtn) {
-    sendBtn.addEventListener('click', () => {
+    sendBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       sendMessage(chatInput.value);
       chatInput.value = '';
-    });
+    }, false);
   }
 }
 
@@ -151,7 +146,8 @@ function formatMessage(message) {
 }
 
 /**
- * Toggle chatbot visibility
+ * Toggle chatbot visibility (tidak digunakan di sini, dipindah ke chatbot-init.js)
+ * Tetap ada untuk backward compatibility
  */
 function toggleChatbot() {
   const chatbot = document.getElementById('chatbot-widget');
