@@ -12,6 +12,7 @@ let isLoading = false;
 export function initChatbot() {
   setupChatbotEventListeners();
   loadChatHistory();
+  setupQuickActionToggle();
 }
 
 /**
@@ -188,6 +189,34 @@ export function clearChatHistory() {
   const chatMessages = document.getElementById('chat-messages');
   if (chatMessages) {
     chatMessages.innerHTML = '';
+  }
+}
+
+/**
+ * Setup toggle untuk quick actions
+ */
+function setupQuickActionToggle() {
+  const toggleBtn = document.getElementById('toggle-suggestions');
+  const quickActionsHeader = document.getElementById('quick-actions-toggle');
+  const quickActions = document.getElementById('chatbot-quick-actions');
+  
+  // Load saved state
+  const isCollapsed = localStorage.getItem('quickActionsCollapsed') === 'true';
+  if (isCollapsed && quickActions && toggleBtn) {
+    quickActions.classList.add('collapsed');
+    toggleBtn.classList.add('collapsed');
+  }
+
+  if (quickActionsHeader) {
+    quickActionsHeader.addEventListener('click', () => {
+      if (quickActions && toggleBtn) {
+        const willBeCollapsed = !quickActions.classList.contains('collapsed');
+        quickActions.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('collapsed');
+        // Save state
+        localStorage.setItem('quickActionsCollapsed', willBeCollapsed.toString());
+      }
+    });
   }
 }
 

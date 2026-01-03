@@ -25,15 +25,38 @@
     </div>
   </div>
 
-  <div class="chatbot-quick-actions">
-    <button class="quick-action" onclick="window.explainConcept('Fotosintesis', 'beginner')">
-      📚 Fotosintesis
+  <div class="quick-actions-header" id="quick-actions-toggle">
+    <span class="quick-actions-title">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      Contoh Pertanyaan
+    </span>
+    <button class="toggle-suggestions-btn" id="toggle-suggestions" aria-label="Toggle suggestions">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M7 10l5 5 5-5z"/>
+      </svg>
     </button>
-    <button class="quick-action" onclick="window.explainConcept('Persamaan Kuadrat', 'intermediate')">
-      🔢 Persamaan Kuadrat
+  </div>
+
+  <div class="chatbot-quick-actions" id="chatbot-quick-actions">
+    <button class="quick-action" onclick="window.explainConcept('Integral dan Diferensial', 'intermediate')">
+      🔢 Integral dan Diferensial
     </button>
-    <button class="quick-action" onclick="window.explainConcept('Revolusi Perancis', 'intermediate')">
-      📖 Sejarah
+    <button class="quick-action" onclick="window.explainConcept('Hukum Newton', 'beginner')">
+      ⚛️ Hukum Newton
+    </button>
+    <button class="quick-action" onclick="window.explainConcept('Simple Present vs Present Continuous', 'beginner')">
+      📝 Tenses Bahasa Inggris
+    </button>
+    <button class="quick-action" onclick="window.explainConcept('Struktur Sel dan Fungsinya', 'intermediate')">
+      🔬 Biologi - Sel
+    </button>
+    <button class="quick-action" onclick="window.explainConcept('Persamaan Reaksi Redoks', 'advanced')">
+      🧪 Kimia - Redoks
+    </button>
+    <button class="quick-action" onclick="window.explainConcept('Algoritma Sorting dan Searching', 'intermediate')">
+      💻 Algoritma Pemrograman
     </button>
   </div>
 
