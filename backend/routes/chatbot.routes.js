@@ -1,8 +1,11 @@
 import express from 'express';
 import { sendMessage, getTopicHelp, explainConcept, checkHealth } from '../controllers/chatbot.controller.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+
+// Apply authentication to all chatbot routes
+router.use(authenticate);
 
 /**
  * @swagger
