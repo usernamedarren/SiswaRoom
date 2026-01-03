@@ -94,39 +94,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize chatbot functionality
     initChatbot();
 
-    // Add toggle button handler for floating button
-    const toggleBtn = document.getElementById('chatbot-toggle-btn');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        const widget = document.getElementById('chatbot-widget');
-        widget?.classList.toggle('open');
-      });
-    }
-
-    // Add navbar button handler
-    const navbarBtn = document.getElementById('navbar-ai-tutor');
-    if (navbarBtn) {
-      navbarBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const widget = document.getElementById('chatbot-widget');
-        widget?.classList.toggle('open');
-      });
-    }
-
-    // Close widget when X button is clicked
-    const closeBtn = document.getElementById('toggle-chatbot');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        const widget = document.getElementById('chatbot-widget');
-        widget?.classList.remove('open');
-      });
-    }
+    // Setup event handlers
+    setupChatbotEventHandlers();
 
     console.log('[Chatbot] Successfully initialized!');
   } catch (error) {
     console.error('[Chatbot] Initialization error:', error);
   }
 });
+
+/**
+ * Setup all chatbot event handlers
+ */
+function setupChatbotEventHandlers() {
+  // Floating toggle button (bottom-right)
+  const toggleBtn = document.getElementById('chatbot-toggle-btn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', toggleChatbot, false);
+  }
+
+  // Navbar AI Tutor button
+  const navbarBtn = document.getElementById('navbar-ai-tutor');
+  if (navbarBtn) {
+    navbarBtn.addEventListener('click', toggleChatbot, false);
+  }
+
+  // Close button (X in header)
+  const closeBtn = document.getElementById('toggle-chatbot');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeChatbot, false);
+  }
+
+  console.log('[Chatbot] Event handlers setup complete');
+}
+
+/**
+ * Toggle chatbot visibility
+ */
+function toggleChatbot(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  const widget = document.getElementById('chatbot-widget');
+  if (widget) {
+    widget.classList.toggle('open');
+    console.log('[Chatbot] Toggle - open:', widget.classList.contains('open'));
+  }
+}
+
+/**
+ * Close chatbot
+ */
+function closeChatbot(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  const widget = document.getElementById('chatbot-widget');
+  if (widget) {
+    widget.classList.remove('open');
+    console.log('[Chatbot] Closed');
+  }
+}
 
 /**
  * Setup API URL if not already set
