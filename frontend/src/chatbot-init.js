@@ -121,10 +121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         widget?.classList.remove('open');
       });
     }
-  } catch (error) {
-    console.error('[Chatbot] Initialization error:', error);
-  }
-});
 
     console.log('[Chatbot] Successfully initialized!');
   } catch (error) {
