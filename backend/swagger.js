@@ -27,6 +27,9 @@ export const swaggerSpec = {
     { name: 'Quiz Attempts', description: 'Pengerjaan dan penilaian kuis' },
     { name: 'Library', description: 'Sumber belajar tambahan' },
     { name: 'Teacher', description: 'Dashboard dan manajemen guru' },
+    { name: 'Chatbot', description: 'AI Chatbot (Groq API) untuk pembelajaran' },
+    { name: 'Activity', description: 'Aktivitas pembelajaran pengguna' },
+    { name: 'Dashboard', description: 'Statistik dan grafik dashboard' },
     { name: 'Health', description: 'Status layanan' }
   ],
   components: {
@@ -153,6 +156,64 @@ export const swaggerSpec = {
           message: { type: 'string', example: 'Login berhasil' },
           token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
           user: { $ref: '#/components/schemas/User' }
+        }
+      },
+      ChatMessage: {
+        type: 'object',
+        properties: {
+          sender: { type: 'string', enum: ['user', 'bot'], example: 'user' },
+          message: { type: 'string', example: 'Jelaskan tentang fotosintesis' }
+        }
+      },
+      ChatResponse: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', example: 'Fotosintesis adalah proses...' },
+          timestamp: { type: 'string', format: 'date-time' }
+        }
+      },
+      Activity: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: '1' },
+          type: { type: 'string', example: 'quiz_completed' },
+          title: { type: 'string', example: 'Kuis Bahasa Inggris' },
+          description: { type: 'string', example: 'Selesai mengerjakan kuis dengan skor 85' },
+          time: { type: 'string', example: '2 jam yang lalu' }
+        }
+      },
+      DashboardStats: {
+        type: 'object',
+        properties: {
+          subjects: { type: 'integer', example: 5 },
+          materials: { type: 'integer', example: 12 },
+          questions: { type: 'integer', example: 45 },
+          quizzes: { type: 'integer', example: 8 }
+        }
+      },
+      ChartData: {
+        type: 'object',
+        properties: {
+          quizScores: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string', example: 'Kuis 1' },
+                score: { type: 'number', example: 85 }
+              }
+            }
+          },
+          subjectProgress: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                subject: { type: 'string', example: 'Matematika' },
+                progress: { type: 'number', example: 75 }
+              }
+            }
+          }
         }
       }
     }
@@ -773,6 +834,154 @@ export const swaggerSpec = {
             }
           },
           403: { description: 'Forbidden' }
+        }
+      }
+    },
+    '/chatbot/message': {
+      post: {
+        tags: ['Chatbot'],
+        summary: 'Kirim pesan ke AI chatbot',
+        description: 'Chatbot menggunakan Groq API (llama-3.3-70b-versatile) untuk memberikan bantuan pembelajaran',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: {
+                  message: { type: 'string', example: 'Jelaskan cara menyelesaikan persamaan kuadrat' },
+                  conversationHistory: {
+                    type: 'array',
+                    description: 'Optional: Riwayat percakapan sebelumnya untuk konteks',
+                    items: { $ref: '#/components/schemas/ChatMessage' }
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Respons dari AI', content: { 'application/json': { schema: { $ref: '#/components/schemas/ChatResponse' } } } },
+          400: { description: 'Pesan tidak valid', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
+          401: { description: 'Unauthorized' },
+          500: { description: 'Server error' }
+        }
+      }
+    },
+    '/chatbot/topic-help': {
+      post: {
+        tags: ['Chatbot'],
+        summary: 'Dapatkan bantuan untuk topik pembelajaran spesifik',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['topic'],
+                properties: {
+                  topic: { type: 'string', example: 'Matematika' },
+                  subtopic: { type: 'string', example: 'Persamaan Kuadrat' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Bantuan topik dari AI', content: { 'application/json': { schema: { $ref: '#/components/schemas/ChatResponse' } } } },
+          400: { description: 'Parameter tidak valid', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
+          401: { description: 'Unauthorized' }
+        }
+      }
+    },
+    '/chatbot/explain': {
+      post: {
+        tags: ['Chatbot'],
+        summary: 'Dapatkan penjelasan konsep pembelajaran',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['concept'],
+                properties: {
+                  concept: { type: 'string', example: 'Fotosintesis' },
+                  level: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'], default: 'intermediate', example: 'intermediate' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Penjelasan konsep dari AI', content: { 'application/json': { schema: { $ref: '#/components/schemas/ChatResponse' } } } },
+          400: { description: 'Parameter tidak valid', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
+          401: { description: 'Unauthorized' }
+        }
+      }
+    },
+    '/chatbot/health': {
+      get: {
+        tags: ['Chatbot'],
+        summary: 'Check status chatbot service',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Chatbot service status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'healthy' },
+                    service: { type: 'string', example: 'Groq API' },
+                    model: { type: 'string', example: 'llama-3.3-70b-versatile' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Unauthorized' }
+        }
+      }
+    },
+    '/activity/recent': {
+      get: {
+        tags: ['Activity'],
+        summary: 'Aktivitas terbaru pengguna',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'List aktivitas terbaru', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Activity' } } } } },
+          401: { description: 'Unauthorized' },
+          500: { description: 'Server error' }
+        }
+      }
+    },
+    '/dashboard/stats': {
+      get: {
+        tags: ['Dashboard'],
+        summary: 'Statistik dashboard pengguna',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'Dashboard statistics', content: { 'application/json': { schema: { $ref: '#/components/schemas/DashboardStats' } } } },
+          401: { description: 'Unauthorized' },
+          500: { description: 'Server error' }
+        }
+      }
+    },
+    '/dashboard/charts': {
+      get: {
+        tags: ['Dashboard'],
+        summary: 'Data grafik untuk dashboard',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'Chart data', content: { 'application/json': { schema: { $ref: '#/components/schemas/ChartData' } } } },
+          401: { description: 'Unauthorized' },
+          500: { description: 'Server error' }
         }
       }
     },
